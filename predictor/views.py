@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.http import FileResponse
 
 
+# todo add correct downloading result file
 def index(request):
     if request.method == 'POST':
         result = ''
