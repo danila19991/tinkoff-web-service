@@ -5,6 +5,7 @@
     <title>cafe predictions</title>
 </head>
 <body>
+    <p>This page is in development.</p>
     <form action="{% url 'predictor:index' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
         <ul>
@@ -15,7 +16,10 @@
     </form>
     {% if some_text %}
         <p>{{ some_text }}</p>
+        <form action="{% url 'predictor:index' %}" method="get">
+            <input type="submit" value="download" />
+        </form>
     {% endif %}
-    <p>This page is in development.</p>
+
 </body>
 </html>
