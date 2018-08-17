@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>cafe predictions</title>
+</head>
+<body>
+    <form action="{% url 'predictor:index' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+        <ul>
+            <li><input type="file" name="menu"></li>
+            <li><input type="file" name="file"></li>
+            <li><input type="submit" value="Vote" /></li>
+        </ul>
+    </form>
+    {% if some_text %}
+        <p>{{ some_text }}</p>
+    {% endif %}
+    <p>This page is in development.</p>
+</body>
+</html>
