@@ -17,7 +17,7 @@
     {% if some_text %}
         <p>{{ some_text }}</p>
         <form action="{% url 'predictor:index' %}" method="get">
-            <input type="submit" value="download" />
+            <input type="submit" value="download" name="download" />
         </form>
     {% endif %}
 
