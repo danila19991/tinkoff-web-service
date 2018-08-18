@@ -22,17 +22,8 @@ def get_md5_from_two_files(menu, people):
     return hash_md5.hexdigest()
 
 
-# todo add csv and pandas in parsing
-def make_prediction_file(menu, people, hash_key):
-
-    menu_data = b''
-    for chunk in menu.chunks():
-        menu_data += chunk
-
-    people_data = b''
-    for chunk in people.chunks():
-        people_data += chunk
-
+# todo add csv and pandas in writing
+def make_prediction_file(menu_data, people_data, hash_key):
     result = make_prediction(menu_data, people_data)
 
     if not os.path.exists('prediction'):
@@ -52,3 +43,20 @@ def add_new_result(menu, people, hash_key):
     result = Result(key_hash=hash_key, menu=menu, people=people,
                     generation_time=datetime.now(), prediction=prediction_file)
     result.save(force_insert=True)
+
+
+# todo add csv and pandas in parsing
+def read_menu_file(menu_file):
+    menu_data = b''
+    for chunk in menu_file.chunks():
+        menu_data += chunk
+    return menu_data
+
+
+# todo add csv and pandas in parsing
+def read_people_file(people_file):
+    people_data = b''
+    for chunk in people_file.chunks():
+        people_data += chunk
+    return people_data
+

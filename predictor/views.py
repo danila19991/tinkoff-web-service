@@ -1,15 +1,26 @@
 from predictor.views_utils import get_md5_from_two_files
 from predictor.views_utils import add_new_result
+from predictor.views_utils import read_people_file
+from predictor.views_utils import read_menu_file
 from django.http import HttpResponse
 from django.shortcuts import render
 from predictor.models import Result
 
 
+# todo split this method
 def index(request):
     if request.method == 'POST':
         if 'menu' not in request.FILES or 'file' not in request.FILES:
-            #todo add message with error
-            return render(request, 'predictor/index.html', {})
+            no_menu = None
+            if 'menu' not in request.FILES:
+                no_menu = True
+
+            no_people = None
+            if 'file' not in request.FILES:
+                no_people = True
+
+            return render(request, 'predictor/index.html',
+                          {'no_people': no_people, 'no_menu': no_menu})
 
         result = get_md5_from_two_files(request.FILES['menu'],
                                         request.FILES['file'])
@@ -19,8 +30,24 @@ def index(request):
         predict = Result.objects.filter(key_hash=result)
 
         if not len(predict):
-            add_new_result(request.FILES['menu'], request.FILES['file'],
-                           result)
+
+            menu_parse_error = False
+            menu_data = read_menu_file(request.FILES['menu'])
+            if not menu_data:
+                menu_parse_error = True
+
+            people_parse_error = None
+            people_data = read_people_file(request.FILES['file'])
+            if not people_data:
+                people_parse_error = True
+
+            if menu_parse_error or people_parse_error:
+                return render(request, 'predictor/index.html',
+                              {'people_parse_error': people_parse_error,
+                               'menu_parse_error': menu_parse_error
+                               })
+
+            add_new_result(menu_data, people_data, result)
 
         description = b''
 
@@ -30,7 +57,7 @@ def index(request):
                 break
 
         request.session['description'] = description.decode()
-    if request.method == 'GET' and 'download' in request.GET and\
+    if request.method == 'GET' and 'download' in request.GET and \
             'result' in request.session:
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = \
