@@ -13,6 +13,7 @@ def index(request):
             for chunk in request.FILES['file'].chunks():
                 result += chunk.decode()
         request.session['result'] = result
+
         return render(request, 'predictor/index.html', {'some_text': result})
     if request.method == 'GET' and 'download' in request.GET and\
             'result' in request.session:

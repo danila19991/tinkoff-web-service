@@ -1,25 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>cafe predictions</title>
+	<title>Data analyser</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
 </head>
 <body>
-    <p>This page is in development.</p>
-    <form action="{% url 'predictor:index' %}" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-        <ul>
-            <li><input type="file" name="menu"></li>
-            <li><input type="file" name="file"></li>
-            <li><input type="submit" value="Vote" /></li>
-        </ul>
-    </form>
-    {% if some_text %}
-        <p>{{ some_text }}</p>
-        <form action="{% url 'predictor:index' %}" method="get">
-            <input type="submit" value="download" name="download" />
-        </form>
-    {% endif %}
+	<div class="card text-center">
 
+		<div class="card-header" style="padding-top: 5px; padding-bottom: 0px">
+			<div class="form-group" style="margin-bottom: 0">
+			    <div class="row">
+
+			    	<div class="col-11" >
+						<ul class="nav nav-tabs card-header-tabs">
+                            <a class="navbar-brand" style="color: #212529; margin-top: 2px; margin-left: 8px; padding-top: 5px">
+			                    {% load static %}
+							    <img src="{% static "img/logo.png" %}" width="121.6" height="27.6" class="d-inline-block align-top" alt="">
+							</a>
+						  	<li class="nav-item" style="padding-top: 5px">
+						    	<a class="nav-link active" href="index.html">Prediction</a>
+						  	</li>
+						  	<li class="nav-item" style="padding-top: 5px">
+						   		<a class="nav-link" href="research.html" style="color: rgba(0,0,0,.5);">Research</a>
+						  	</li>
+						</ul>
+					</div>
+
+					<div class="col-1" style="padding-bottom: 5px">
+
+			            <ul class="nav nav-pills card-header-pills justify-content-end">
+			              <li class="nav-item">
+			                <a class="nav-link active" href="#" style="background-color: rgba(0,0,0,.5);">Logout</a>
+			              </li>
+			            </ul>
+			        </div>
+
+
+				</div>
+            </div>
+		</div>
+
+		<div class="card-body">
+        <form action="{% url 'predictor:index' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+		    <div class="container-fluid" style="padding: 0 5% 0 5%">
+				<h1 class="display-4">Data analyser</h1>
+
+			    <div class="form-group">
+			          <div class="row">
+			          		<div class="col-lg-6">
+					            <p>Select file with menu:</p> 
+					            <input type="file" class="form-control-file border" name="menu">
+			              	</div>
+
+			          		<div class="col-lg-6">
+					            <p>Select file with data to analyse:</p> 
+					            <input type="file" class="form-control-file border" name="file">
+
+			              	</div>
+			          </div>
+			    </div>
+			    <button type="submit" class="btn btn-block" name="code" style="background-color: #ffdd2d;" style="color: #ffdd2d;">
+			    Send to analyse!</button>
+			</div>
+        </form>
+
+            {% if some_text %}
+		    <div class="container-fluid" style="padding: 1% 5% 0 5%">
+
+			    <p align="left" style="margin-bottom: 5px">Output statistic:</p>
+			    <textarea rows="15" readonly style="width: 100%">{{ some_text }}</textarea>
+
+                <form action="{% url 'predictor:index' %}" method="get">
+				<button type="submit" class="btn btn-block" name="download" style="background-color: #ffdd2d;" style="color: #ffdd2d;">
+			    Download results</button>
+                </form>
+			</div>
+            {% endif %}
+
+		  </div>
+		</div>
 </body>
 </html>
