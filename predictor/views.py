@@ -7,6 +7,7 @@ from django.shortcuts import render
 from predictor.models import Result
 
 
+# todo comment method
 # todo split this method
 def index(request):
     if request.method == 'POST':

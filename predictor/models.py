@@ -1,7 +1,8 @@
 from django.db import models
 
 
-#todo move cashed files to media dir
+# todo comment this model
+# todo move cashed files to media dir
 class Result(models.Model):
     prediction = models.FileField(upload_to='prediction/')
     menu = models.FileField(upload_to='menu/')
