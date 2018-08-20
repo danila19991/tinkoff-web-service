@@ -1,28 +1,33 @@
 import csv
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse
 
 
 def index(request):
-    if request.method == 'POST':
-        result = b''
-        if 'file' in request.FILES:
-            for chunk in request.FILES['file'].chunks():
-                result += chunk
-        request.session['result'] = result.decode()
-        return render(request, 'predictor/index.html', {'some_text': result})
+    if request.method == 'POST' and 'file' in request.FILES:
+        request.session['result'] = make_prediction(request.FILES['file'])
+
     if request.method == 'GET' and 'download' in request.GET and\
             'result' in request.session:
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = \
             'attachment; filename="predictions.csv'
+
         writer = csv.writer(response)
-        writer.writerow(request.session['result'])
+        for row in request.session['result']:
+            writer.writerow(row)
+
         return response
+
     if 'result' in request.session:
+        #todo add anouther string view for list
+        str_result = ''
+        for row in request.session['result']:
+            str_result += str(row)[1:-1] + '\n'
+            if len(str_result) > 200:
+                break
+
         return render(request, 'predictor/index.html',
-                      {'some_text': request.session['result']})
+                      {'some_text': str_result})
     else:
         return render(request, 'predictor/index.html', {})
 
