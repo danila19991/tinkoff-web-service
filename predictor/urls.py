@@ -9,6 +9,7 @@ app_name = 'predictor'
 urlpatterns = [
     path('', views.index, name='index'),
     path('auth', views.auth, name='auth'),
-    path('register', views.register_page, name='reg'),
-    path('restore', views.require, name='res'),
+    path('register', views.register_page, name='register'),
+    path('restore', views.restore, name='restore'),
+    path('research', views.research_page, name='research')
 ]
