@@ -1,6 +1,8 @@
 import csv
 from django.shortcuts import render
-
+from django.http import HttpResponseRedirect, HttpResponse
+from django.urls import reverse
+from predictor.views_utils import make_prediction
 
 def index(request):
     if request.method == 'POST' and 'file' in request.FILES:
@@ -44,3 +46,9 @@ def register_page(request):
         return HttpResponseRedirect(reverse('predictor:auth'))
     return render(request, 'predictor/register.html', {})
 
+
+def require(request):
+    if request.method == 'GET' and 'restore' in request.GET:
+        return HttpResponseRedirect(reverse('predictor:auth'))
+
+    return render(request, 'predictor/restore.html', {})

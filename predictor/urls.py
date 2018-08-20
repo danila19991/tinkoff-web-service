@@ -10,4 +10,5 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('auth', views.auth, name='auth'),
     path('register', views.register_page, name='reg'),
+    path('restore', views.require, name='res'),
 ]
