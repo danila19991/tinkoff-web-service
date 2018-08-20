@@ -24,7 +24,7 @@ def index(request):
         return response
 
     if 'result' in request.session:
-        #todo add anouther string cast for list
+        # TODO: add another string view for list
         str_result = ''
         for row in request.session['result']:
             str_result += str(row)[1:-1] + '\n'
@@ -49,3 +49,13 @@ def register_page(request):
         return HttpResponseRedirect(reverse('predictor:auth'))
     return render(request, 'predictor/register.html', {})
 
+
+def restore(request):
+    if request.method == 'GET' and 'restore' in request.GET:
+        return HttpResponseRedirect(reverse('predictor:auth'))
+
+    return render(request, 'predictor/restore.html', {})
+
+
+def research_page(request):
+    return render(request, 'predictor/research.html', {})

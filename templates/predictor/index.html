@@ -22,12 +22,15 @@
 			                    {% load static %}
 							    <img src="{% static "img/logo1.png" %}" width="176" height="29.5" class="d-inline-block align-top" alt="">
 							</a>
+
 						  	<li class="nav-item" style="padding-top: 5px">
-						    	<a class="nav-link active" href="index.html">Prediction</a>
+						    	<a class="nav-link active" href="">Prediction</a>
 						  	</li>
-						  	<li class="nav-item" style="padding-top: 5px">
-						   		<a class="nav-link" href="research.html" style="color: rgba(0,0,0,.5);">Research</a>
-						  	</li>
+                            <form>
+                                <li class="nav-item" style="padding-top: 5px">
+                                    <a class="nav-link" href="{% url 'predictor:research' %}" style="color: rgba(0,0,0,.5);" name="research">Research</a>
+                                </li>
+                            </form>
 						</ul>
 					</div>
 
@@ -35,12 +38,10 @@
 
 			            <ul class="nav nav-pills card-header-pills justify-content-end">
 			              <li class="nav-item">
-			                <a class="nav-link active" href="auth" style="background-color: rgba(0,0,0,.5);">Logout</a>
+			                <a class="nav-link active" href="{% url 'predictor:auth' %}" style="background-color: rgba(0,0,0,.5);">Logout</a>
 			              </li>
 			            </ul>
 			        </div>
-
-
 				</div>
             </div>
 		</div>
@@ -48,10 +49,10 @@
 		<div class="card-body" align="center">
         <form action="{% url 'predictor:index' %}" method="post"  enctype="multipart/form-data">
             {% csrf_token %}
-		    <div class="container-fluid" style="padding: 0 5% 0 5%;">
-				<h1 class="display-4">Data analyser</h1>
+            <h1 class="display-4">Data analyser</h1>
+		    <div class="container-fluid" style="padding-left: 20%; padding-right: 20%;">
                 <p>Select file with data:</p>
-                <div class="custom-file" style="width: 50%">
+                <div class="custom-file">
                     <input type="file" class="custom-file-input" id="menu" name="file">
                     <label class="custom-file-label" for="menu">Choose file</label>
                 </div>
@@ -65,7 +66,7 @@
             </script>
 
 
-            <button type="submit" class="btn btn-block" name="code" style="background-color: #ffdd2d; margin-top: 20px; width: 50%;">
+            <button type="submit" class="btn btn-block" name="code" style="background-color: #ffdd2d; margin-top: 20px; width: 60%;">
             Send to analyse!</button>
         </form>
 

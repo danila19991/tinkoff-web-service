@@ -20,29 +20,25 @@
             </ul>
 		</div>
 
-		<div class="card-body" align="center">
+		<div class="card-body" align="center" style="margin-left: 10%; margin-right: 10%">
+            <p>Restore your password</p>
 
-			<form>
-				<div class="form-group" style="padding-left: 35%; padding-right: 35%">
-					    <label for="inputLogin">Email</label>
-					    <input type="login" class="form-control" id="inputLogin" placeholder="Enter email">
-				</div>
-				<div class="form-group" style="padding-left: 35%; padding-right: 35%">
-					    <label for="inputPassword">Password</label>
-					    <input type="password" class="form-control" id="inputPassword" placeholder="Enter password">
-					    <a href="{% url 'predictor:restore' %}"><small id="forgot" class="form-text text-muted">Forgot password?</small></a>
-				</div>
-				<button type="submit" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="submit">Submit</button>
-			</form>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="email">Email</span>
+                </div>
 
-			<div class="card" style="width: 18rem; margin-top: 15px; height: 3rem;">
-			  <div class="card-body" style=" padding-top: 10px">
-			    <p class="card-text">New in our service? <a href="{% url 'predictor:register' %}">Register!</a></p>
-			  </div>
-			</div>
+                <input type="text" class="form-control" id="email1" aria-describedby="basic-addon3" placeholder="Enter your corporate email">
+                <div class="input-group-append">
+                    <span class="input-group-text" id="email_postfix">@tinkoff.ru</span>
+                </div>
+            </div>
+
+            <form>
+                <button type="submit" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="restore">Restore</button>
+            </form>
+
 		</div>
-
-
-	</div>
+    </div>
 </body>
 </html>
