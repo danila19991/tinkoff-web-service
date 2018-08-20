@@ -1,15 +1,16 @@
 import csv
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 
 
 def index(request):
     if request.method == 'POST':
-        result = ''
+        result = b''
         if 'file' in request.FILES:
             for chunk in request.FILES['file'].chunks():
-                result += chunk.decode()
-        request.session['result'] = result
+                result += chunk
+        request.session['result'] = result.decode()
         return render(request, 'predictor/index.html', {'some_text': result})
     if request.method == 'GET' and 'download' in request.GET and\
             'result' in request.session:
@@ -24,3 +25,9 @@ def index(request):
                       {'some_text': request.session['result']})
     else:
         return render(request, 'predictor/index.html', {})
+
+
+def auth(request):
+    if request.method == 'GET' and 'submit' in request.GET:
+        return HttpResponseRedirect(reverse('predictor:index'))
+    return render(request, 'predictor/auth.html', {})
