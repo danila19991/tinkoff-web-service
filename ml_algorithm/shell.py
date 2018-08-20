@@ -1,5 +1,3 @@
-import importlib
-import json
 import ml_algorithm.logger as logger
 import pickle
 import ml_algorithm.tester as tester
@@ -7,76 +5,48 @@ import ml_algorithm.tester as tester
 import numpy as np
 import pandas as pd
 
+import ml_algorithm.parsers.parser as ipar
 import ml_algorithm.parsers.linear_model_parser as lmp
+import ml_algorithm.parsers.config_parsers as cnfp
+
+import ml_algorithm.models.model as mdl
 
 
-@logger.decor_class_logging_error_and_time(
-    "__init__", "__get_class", "__read_config", "__input", "output", "predict",
-    "test", "save_model"
-)
+@logger.decor_class_logging_error_and_time()
 class Shell:
 
-    def __init__(self, config_filename="ml_algorithm/ml_config.json",
-                 parser_instance=None, model_instance=None):
+    def __init__(self, config_filename="ml_algorithm/ml_config.json"):
         """
         Constructor which initialize class fields.
 
-        :param config_filename: str
-            brief.
-
-        :param parser_instance: subclass from parsers.IParser
-            brief.
-
-        :param model_instance: subclass from models.IModel
-            brief.
-        """
-        self.__validation_labels = None
-        self.__predictions = None
-        self.__parser = parser_instance
-        self.__model = model_instance
-        self.__tester = tester.Tester()
-
-        if parser_instance is not None and model_instance is not None:
-            return
-
-        self.__read_config(config_filename)
-
-    @staticmethod
-    def __get_class(class_name, module_name):
-        """
-        Get instance of class with class_name from module_name.
-
-        :param class_name: str
-            Name of the class to be created.
-
-        :param module_name: str
-            Name of the module which stores class with class_name.
-
-        :return: instance of class_name from module_name
-        """
-        module = importlib.import_module('ml_algorithm.'+module_name)
-        class_ = getattr(module, class_name)
-        return class_()
-
-    def __read_config(self, config_filename):
-        """
-        Read machne learning parameters into this class.
-
-        :param config_filename: str
+        :param config_filename: str, optional (default="ml_config.json")
             Name of the json file with configuration.
         """
-        with open(config_filename, "r") as f:
-            self.__parsed_json = json.loads(f.read())
+        self._validation_labels = None
+        self._predictions = None
+        self._config_parser = cnfp.ConfigParser(config_filename)
+        self._tester = tester.Tester(
+            self._config_parser["metric_name"]
+        )
 
-        model_name = self.__parsed_json["model_name"]
-        model_module_name = self.__parsed_json["model_module_name"]
-        parser_name = self.__parsed_json["parser_name"]
-        parser_module_name = self.__parsed_json["parser_module_name"]
+        self._model_parameters = self._config_parser["model_parameters"]
+        self._parser_parameters = self._config_parser["parser_parameters"]
 
-        self.__model = self.__get_class(model_name, model_module_name)
-        self.__parser = self.__get_class(parser_name, parser_module_name)
+        self._model = self._config_parser.get_instance(
+            self._config_parser["model_name"],
+            self._config_parser["model_module_name"],
+            **self._model_parameters
+        )
+        self._parser = self._config_parser.get_instance(
+            self._config_parser["parser_name"],
+            self._config_parser["parser_module_name"],
+            **self._parser_parameters,
+            debug=self.is_debug()
+        )
 
-    def __input(self, filepath_or_buffer, **kwargs):
+        assert self._check_interfaces()
+
+    def _input(self, filepath_or_buffer, **kwargs):
         """
         An additional method that loads data and divides it into test and
         validation samples.
@@ -86,19 +56,77 @@ class Shell:
         :param kwargs: dict
             Passes additional arguments to the parser.parse method.
         """
-        self.__parser.parse(filepath_or_buffer, to_list=True, **kwargs)
+        self._parser.parse(filepath_or_buffer, to_list=True, **kwargs)
+
+    def _check_interface(self, instance, parent_class):
+        """
+        Checks the classes on the according interfaces.
+
+        :param instance: object
+            Object to check.
+
+        :param parent_class: class
+            Class to verify.
+
+        :return: bool
+            Results of verifying.
+        """
+        return isinstance(instance, parent_class)
+
+    def _check_interfaces(self):
+        """
+        Checks parser and model classes on the according interfaces.
+
+        :return: bool
+            Status of verifying.
+        """
+        check1 = self._check_interface(self._parser, ipar.IParser)
+        check2 = self._check_interface(self._model, mdl.IModel)
+        return check1 and check2
+
+    def is_debug(self, flag_name="debug"):
+        """
+        Return debug status of the program.
+
+        :param flag_name: str, optional (default="debug")
+            Name of the debug flag in config.
+
+        :return: bool
+            Value of debug flag.
+        """
+        return self._config_parser[flag_name]
+
+    @property
+    def predictions(self):
+        """
+        Get current results of prediction.
+
+        :return: list
+            Current predictions.
+        """
+        return self._predictions
+
+    def get_formatted_predictions(self):
+        """
+        Format raw results of prediction.
+
+        :return: list
+            Formatted predictions.
+        """
+        predictions = [x.tolist() for x in self._predictions]
+        int_prediction = [[int(round(x)) for x in lst] for lst in predictions]
+        predictions = [lmp.LinearModelParser.to_final_label(x)
+                       for x in int_prediction]
+        return predictions
 
     def output(self, output_filename="result"):
         """
         Output current prediction to filename.
 
-        :param output_filename: str
+        :param output_filename: str, optional (default="result")
             Filename to output.
         """
-        predictions = [x.tolist() for x in self.__predictions]
-        int_prediction = [[int(round(x)) for x in lst] for lst in predictions]
-        predictions = [lmp.LinearModelParser.to_final_label2(x)
-                       for x in int_prediction]
+        predictions = self.get_formatted_predictions()
 
         out = pd.DataFrame(predictions, dtype=np.int64)
         out.to_csv(f"{output_filename}.csv", index=False, header=False)
@@ -117,32 +145,24 @@ class Shell:
         :param kwargs: dict
             Passes additional arguments to the parser.parse method.
         """
-        self.__input(filepath_or_buffer, **kwargs)
-        self.__model.train(*self.__parser.get_train_data())
+        self._input(filepath_or_buffer, **kwargs)
+        self._model.train(*self._parser.get_train_data())
 
-        validation_samples, self.__validation_labels = \
-            self.__parser.get_validation_data()
+        validation_samples, self._validation_labels = \
+            self._parser.get_validation_data()
 
-        self.__predictions = self.__model.predict(validation_samples,
-                                                  self.__validation_labels)
-
-    @property
-    def predictions(self):
-        predictions = [x.tolist() for x in self.__predictions]
-        int_prediction = [[int(round(x)) for x in lst] for lst in predictions]
-        predictions = [lmp.LinearModelParser.to_final_label2(x)
-                       for x in int_prediction]
-        return predictions
+        self._predictions = self._model.predict(validation_samples,
+                                                self._validation_labels)
 
     def test(self):
         """
         Test prediction quality of algorithm.
         """
-        test_result = self.__tester.test(self.__validation_labels,
-                                         self.__predictions)
+        test_result = self._tester.test(self._validation_labels,
+                                        self._predictions)
 
-        quality = self.__tester.quality_control(self.__validation_labels,
-                                                self.__predictions)
+        quality = self._tester.quality_control(self._validation_labels,
+                                               self._predictions)
 
         print(f"Metrics: {test_result}")
         print(f"Quality satisfaction: {quality}")
@@ -151,11 +171,11 @@ class Shell:
         """
         Save trained model with all parameters to file.
 
-        :param filename: str
+        :param filename: str, optional (default="model")
             Filename of model.
         """
         with open(f"models/{filename}.mdl", "wb") as output_stream:
-            output_stream.write(pickle.dumps(self.__model.model))
+            output_stream.write(pickle.dumps(self._model.model))
 
 
 def test_linear():

@@ -5,7 +5,7 @@ def make_prediction(input_data):
     sh = Shell()
     sh.predict(input_data)
     sh.test()
-    return sh.predictions
+    return sh.get_formatted_predictions()
 
 
 def check_content(necessary_fields, have_fields):

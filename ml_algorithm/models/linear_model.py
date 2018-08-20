@@ -8,8 +8,8 @@ from ml_algorithm.models import model
 
 class LinearModel(model.IModel):
 
-    def __init__(self):
-        self.model = LinearRegression()
+    def __init__(self, **kwargs):
+        self.model = LinearRegression(**kwargs)
 
     def train(self, train_samples, train_labels):
         self.model.fit(train_samples, train_labels)
