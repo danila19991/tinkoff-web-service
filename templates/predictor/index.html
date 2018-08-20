@@ -9,7 +9,6 @@
     <form action="{% url 'predictor:index' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
         <ul>
-            <li><input type="file" name="menu"></li>
             <li><input type="file" name="file"></li>
             <li><input type="submit" value="Vote" /></li>
         </ul>
