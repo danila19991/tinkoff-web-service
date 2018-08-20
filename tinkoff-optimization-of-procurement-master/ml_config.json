@@ -1,0 +1,8 @@
+{
+  "model_name": "LinearModel",
+  "model_module_name": "models.linear_model",
+  "parser_name": "LinearModelParser",
+  "parser_module_name": "parsers.linear_model_parser",
+  "metric_name": "MeanF1Score",
+  "bad_metric_alarm": "True"
+}
