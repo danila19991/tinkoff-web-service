@@ -1,5 +1,10 @@
 import csv
 from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.http import HttpResponse
+from django.urls import reverse
+from predictor.views_utils import make_prediction
+from django.contrib.auth.models import User
 
 
 def index(request):
@@ -19,7 +24,7 @@ def index(request):
         return response
 
     if 'result' in request.session:
-        #todo add anouther string view for list
+        #todo add anouther string cast for list
         str_result = ''
         for row in request.session['result']:
             str_result += str(row)[1:-1] + '\n'
