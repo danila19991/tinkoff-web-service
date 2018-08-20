@@ -22,14 +22,15 @@
 
 		<div class="card-body" align="center">
 
-			<form>
+			<form method="post">
+                {% csrf_token %}
 				<div class="form-group" style="padding-left: 35%; padding-right: 35%">
 					    <label for="inputLogin">Email</label>
-					    <input type="login" class="form-control" id="inputLogin" placeholder="Enter email">
+					    <input type="login" name="username" class="form-control" id="inputLogin" placeholder="Enter email">
 				</div>
 				<div class="form-group" style="padding-left: 35%; padding-right: 35%">
 					    <label for="inputPassword">Password</label>
-					    <input type="password" class="form-control" id="inputPassword" placeholder="Enter password">
+					    <input type="password" name="password" class="form-control" id="inputPassword" placeholder="Enter password">
 					    <a href="{% url 'predictor:restore' %}"><small id="forgot" class="form-text text-muted">Forgot password?</small></a>
 				</div>
 				<button type="submit" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="submit">Submit</button>

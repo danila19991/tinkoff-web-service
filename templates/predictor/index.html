@@ -38,7 +38,11 @@
 
 			            <ul class="nav nav-pills card-header-pills justify-content-end">
 			              <li class="nav-item">
-			                <a class="nav-link active" href="{% url 'predictor:auth' %}" style="background-color: rgba(0,0,0,.5);">Logout</a>
+                              <form>
+                                  <button type="submit" class="btn btn-block" name="logout" style="background-color: #ffdd2d; margin-top: 20px; width: 60%;">
+                                      Logout
+                                  </button>
+                              </form>
 			              </li>
 			            </ul>
 			        </div>
@@ -53,7 +57,7 @@
 		    <div class="container-fluid" style="padding-left: 20%; padding-right: 20%;">
                 <p>Select file with data:</p>
                 <div class="custom-file">
-                    <input type="file" class="custom-file-input" id="menu" name="file">
+                    <input type="file" class="custom-file-input" id="menu" name="input_data">
                     <label class="custom-file-label" for="menu">Choose file</label>
                 </div>
             </div>
@@ -70,11 +74,11 @@
             Send to analyse!</button>
         </form>
 
-            {% if some_text %}
+            {% if result_description %}
 		    <div class="container-fluid" style="padding: 1% 5% 0 5%">
 
 			    <p align="left" style="margin-bottom: 5px">Output statistic:</p>
-			    <textarea rows="15" readonly style="width: 100%">{{ some_text }}</textarea>
+			    <textarea rows="15" readonly style="width: 100%">{{ result_description }}</textarea>
 
                 <form action="{% url 'predictor:index' %}" method="get">
 				<button type="submit" class="btn btn-block" name="download" style="background-color: #ffdd2d;" style="color: #ffdd2d;">
