@@ -7,8 +7,8 @@ from ml_algorithm.models import model
 
 class KNearestNeighborsModel(model.IModel):
 
-    def __init__(self):
-        self.model = KNeighborsRegressor()
+    def __init__(self, **kwargs):
+        self.model = KNeighborsRegressor(**kwargs)
 
     def train(self, train_samples, train_labels):
         self.model.fit(train_samples, train_labels)

@@ -40,21 +40,18 @@ def decor_timer(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         start = time.time()
-        func(*args, **kwargs)
+        result = func(*args, **kwargs)
         duration = time.time() - start
         logging.debug(
             f"{func.__name__} completed in {duration * 1000:.8f}ms.")
+        return result
     return wrapper
 
 
-def decor_class_logging_error_and_time(*method_names):
-    def class_rebuild(cls):
-        class NewClass(cls):
-            def __getattribute__(self, attr_name):
-                obj = super(NewClass, self).__getattribute__(attr_name)
-                if hasattr(obj, "__call__") and attr_name in method_names:
-                    return decor_timer(decor_exception(obj))
-                return obj
-
-        return NewClass
-    return class_rebuild
+def decor_class_logging_error_and_time():
+    def decorate(cls):
+        for attr in cls.__dict__:
+            if callable(getattr(cls, attr)):
+                setattr(cls, attr, decor_timer(decor_exception(getattr(cls, attr))))
+        return cls
+    return decorate

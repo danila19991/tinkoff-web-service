@@ -1,38 +1,28 @@
 import abc
-import json
 
 from sklearn.metrics import mean_squared_error, r2_score
 
-from ml_algorithm.parsers.linear_model_parser import LinearModelParser as lmp
+from ml_algorithm.parsers.linear_model_parser import LinearModelParser
 
 
 class Tester:
 
-    def __init__(self, config_filename="ml_algorithm/ml_config.json", border=0.5):
+    def __init__(self, metric_name="MeanF1Score", border=0.5):
         """
         Initializing object of main class with testing algorithm.
 
-        :param config_filename: str
-            Name of the json file with configuration.
+        :param metric_name: str
+            Name of the metric to check quality.
 
         :param border: float
             The accuracy boundary at which the algorithm is considered to be
             exact.
         """
-        with open(config_filename, "r") as f:
-            self.__parsed_json = json.loads(f.read())
+        self._invert_list = ["MeanF1Score"]
 
-        self.__bad_metric_alarm = bool(self.__parsed_json["bad_metric_alarm"])
-
-        self.__invert_list = ["MeanF1Score"]
-
-        self.__metric_name = self.__parsed_json["metric_name"]
-        if self.__metric_name == "MeanSquaredError":
-            self.__tester = MeanSquaredError(border)
-        elif self.__metric_name == "MeanF1Score":
-            self.__tester = MeanF1Score(border)
-        else:
-            raise ValueError("No metric with given name!")
+        self._metric_name = metric_name
+        class_ = globals()[self._metric_name]
+        self._tester = class_(border)
 
     def test(self, validation_labels, predictions):
         """
@@ -47,7 +37,7 @@ class Tester:
         :return: float
             A numerical estimate of the accuracy of the algorithm.
         """
-        return self.__tester.test(validation_labels, predictions)
+        return self._tester.test(validation_labels, predictions)
 
     def quality_control(self, validation_labels, predictions):
         """
@@ -62,9 +52,9 @@ class Tester:
         :return: float
             Bool value which define quality of the algorithm.
         """
-        invert_comparison = self.__metric_name in self.__invert_list
-        return self.__tester.quality_control(validation_labels, predictions,
-                                             invert_comparison)
+        invert_comparison = self._metric_name in self._invert_list
+        return self._tester.quality_control(validation_labels, predictions,
+                                            invert_comparison)
 
 
 class Metric(abc.ABC):
@@ -77,8 +67,8 @@ class Metric(abc.ABC):
             The accuracy boundary at which the algorithm is considered to be
             exact.
         """
-        self.__border = border
-        self.__cache = None
+        self._border = border
+        self._cache = None
 
     @abc.abstractmethod
     def test(self, validation_labels, predictions):
@@ -110,15 +100,15 @@ class Metric(abc.ABC):
         :param invert_comparison: bool
             Bool value that changes the direction of comparison
 
-        :return: bool
+        :return: bool, optional (default=False)
             Bool value which define quality of the algorithm.
         """
-        if self.__cache is None:
-            self.__cache = self.test(validation_labels, predictions)
+        if self._cache is None:
+            self._cache = self.test(validation_labels, predictions)
 
         if invert_comparison:
-            return self.__cache > self.__border
-        return self.__cache < self.__border
+            return self._cache > self._border
+        return self._cache < self._border
 
 
 class MeanSquaredError(Metric):
@@ -133,18 +123,18 @@ class MeanSquaredError(Metric):
         :param predictions: list
             List of lists with predicted data.
 
-        :param r2: bool
+        :param r2: bool, optional (default=False)
             Flag for additional metric.
 
         :return: float
             A numerical estimate of the accuracy of the algorithm.
         """
-        self.__cache = mean_squared_error(validation_labels, predictions)
+        self._cache = mean_squared_error(validation_labels, predictions)
 
         # Explained variance score (r2_score): 1 is perfect prediction.
         if r2:
-            return self.__cache, r2_score(validation_labels, predictions)
-        return self.__cache
+            return self._cache, r2_score(validation_labels, predictions)
+        return self._cache
 
 
 class MeanF1Score(Metric):
@@ -155,6 +145,32 @@ class MeanF1Score(Metric):
             return 0
         else:
             return conj / arr_len
+
+    @staticmethod
+    def conjunction(lst1, lst2):
+        it1 = iter(lst1)
+        it2 = iter(lst2)
+        try:
+            value1 = next(it1)
+            value2 = next(it2)
+        except StopIteration:
+            return 0
+
+        result = 0
+        while True:
+            try:
+                if value1 == value2:
+                    result += 1
+                    value1 = next(it1)
+                    value2 = next(it2)
+                elif value1 > value2:
+                    value2 = next(it2)
+                else:
+                    value1 = next(it1)
+            except StopIteration:
+                break
+
+        return result
 
     def test_check(self, validation_label, prediction):
         """
@@ -172,11 +188,12 @@ class MeanF1Score(Metric):
         assert len(validation_label) == len(prediction)
 
         int_prediction = [int(round(x)) for x in prediction]
-        y_z = [x for x, p in zip(validation_label, int_prediction)
-               if x == p and x != 0]
-        conj = len(y_z)
-        int_prediction = lmp.to_final_label2(int_prediction)
-        validation_label = lmp.to_final_label2(validation_label)
+
+        int_prediction = LinearModelParser.to_final_label(int_prediction)
+        validation_label = LinearModelParser.to_final_label(validation_label)
+
+        conj = self.conjunction(int_prediction, validation_label)
+
         p = self.zero_check(conj, len(int_prediction))
         r = self.zero_check(conj, len(validation_label))
         if p == 0 and r == 0:
@@ -193,27 +210,13 @@ class MeanF1Score(Metric):
         :param predictions: list
             List of lists with predicted data.
 
-        :param r2: bool
-            Flag for additional metric.
-
         :return: float
             A numerical estimate of the accuracy of the algorithm.
         """
+        assert self.conjunction([1, 1, 2, 3, 5], [1, 2, 4, 5]) == 3
+
         num_checks = len(validation_labels)
         result = [self.test_check(validation_labels[i],
                                   predictions[i]) for i in range(num_checks)]
-        self.__cache = sum(result) / num_checks
-        return self.__cache
-
-
-def tester_testing():
-    tester = Tester("ml_config.json", 0.5)
-
-    sv = [[0, 1, 2, 0, 1, 0, 0]]
-    predict = [[0, 2, 1, 1, 1, 0, 0]]
-
-    print(tester.test(sv, predict))
-
-
-if __name__ == "__main__":
-    tester_testing()
+        self._cache = sum(result) / num_checks
+        return self._cache

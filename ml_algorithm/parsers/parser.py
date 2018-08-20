@@ -55,7 +55,7 @@ class IParser(abc.ABC):
             and file. For file URLs, a host is expected. For instance, a local
             file could be file://localhost/path/to/table.csv.
 
-        :param to_list:
+        :param to_list: bool, optional (default=False)
             Specifies whether to return the list.
 
         :param kwargs: dict
