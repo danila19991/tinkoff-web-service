@@ -30,4 +30,12 @@ def index(request):
 def auth(request):
     if request.method == 'GET' and 'submit' in request.GET:
         return HttpResponseRedirect(reverse('predictor:index'))
+
     return render(request, 'predictor/auth.html', {})
+
+
+def register_page(request):
+    if request.method == 'GET' and 'register' in request.GET:
+        return HttpResponseRedirect(reverse('predictor:auth'))
+    return render(request, 'predictor/register.html', {})
+
