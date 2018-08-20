@@ -4,6 +4,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from predictor.views_utils import make_prediction
 
+
 def index(request):
     if request.method == 'POST' and 'file' in request.FILES:
         request.session['result'] = make_prediction(request.FILES['file'])
@@ -21,7 +22,7 @@ def index(request):
         return response
 
     if 'result' in request.session:
-        #todo add anouther string view for list
+        # TODO: add another string view for list
         str_result = ''
         for row in request.session['result']:
             str_result += str(row)[1:-1] + '\n'
