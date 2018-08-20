@@ -8,19 +8,19 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+
 </head>
 <body>
-	<div class="card text-center">
+	<div class="card text-center border-white">
 
-		<div class="card-header" style="padding-top: 5px; padding-bottom: 0px">
-			<div class="form-group" style="margin-bottom: 0">
+		<div class="card-header" style="padding-top: 5px; padding-bottom: 0px;">
+			<div class="form-group" style="margin-bottom: 0;">
 			    <div class="row">
-
 			    	<div class="col-11" >
 						<ul class="nav nav-tabs card-header-tabs">
                             <a class="navbar-brand" style="color: #212529; margin-top: 2px; margin-left: 8px; padding-top: 5px">
 			                    {% load static %}
-							    <img src="{% static "img/logo.png" %}" width="121.6" height="27.6" class="d-inline-block align-top" alt="">
+							    <img src="{% static "img/logo1.png" %}" width="176" height="29.5" class="d-inline-block align-top" alt="">
 							</a>
 						  	<li class="nav-item" style="padding-top: 5px">
 						    	<a class="nav-link active" href="index.html">Prediction</a>
@@ -45,29 +45,28 @@
             </div>
 		</div>
 
-		<div class="card-body">
-        <form action="{% url 'predictor:index' %}" method="post" enctype="multipart/form-data">
+		<div class="card-body" align="center">
+        <form action="{% url 'predictor:index' %}" method="post"  enctype="multipart/form-data">
             {% csrf_token %}
-		    <div class="container-fluid" style="padding: 0 5% 0 5%">
+		    <div class="container-fluid" style="padding: 0 5% 0 5%;">
 				<h1 class="display-4">Data analyser</h1>
+                <p>Select file with data:</p>
+                <div class="custom-file" style="width: 50%">
+                    <input type="file" class="custom-file-input" id="menu" name="file">
+                    <label class="custom-file-label" for="menu">Choose file</label>
+                </div>
+            </div>
 
-			    <div class="form-group">
-			          <div class="row">
-			          		<div class="col-lg-6">
-					            <p>Select file with menu:</p> 
-					            <input type="file" class="form-control-file border" name="menu">
-			              	</div>
+            <script>
+                $('.custom-file-input').on('change', function() {
+                   let fileName = $(this).val().split('\\').pop();
+                   $(this).next('.custom-file-label').addClass("selected").html(fileName);
+                });
+            </script>
 
-			          		<div class="col-lg-6">
-					            <p>Select file with data to analyse:</p> 
-					            <input type="file" class="form-control-file border" name="file">
 
-			              	</div>
-			          </div>
-			    </div>
-			    <button type="submit" class="btn btn-block" name="code" style="background-color: #ffdd2d;" style="color: #ffdd2d;">
-			    Send to analyse!</button>
-			</div>
+            <button type="submit" class="btn btn-block" name="code" style="background-color: #ffdd2d; margin-top: 20px; width: 50%;">
+            Send to analyse!</button>
         </form>
 
             {% if some_text %}
