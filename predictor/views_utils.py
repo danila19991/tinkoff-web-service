@@ -19,7 +19,7 @@ def check_content(necessary_fields, have_fields):
 
 
 # todo change to more valid check
-def validate_email(email):
+def is_email(email):
     from django.core.validators import validate_email
     from django.core.exceptions import ValidationError
     try:

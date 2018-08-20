@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from predictor.views_utils import make_prediction
 from predictor.views_utils import check_content
-from predictor.views_utils import validate_email
+from predictor.views_utils import is_email
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -84,7 +84,7 @@ def register_page(request):
         if not error_context:
             if User.objects.filter(username=request.POST['email']):
                 error_context['another_name'] = True
-            if validate_email(request.POST['email']):
+            if is_email(request.POST['email']):
                 error_context['another_email'] = True
 
         if error_context:
