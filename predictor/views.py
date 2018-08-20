@@ -1,7 +1,5 @@
 import csv
 from django.shortcuts import render
-from django.http import HttpResponse
-from predictor.views_utils import make_prediction
 
 
 def index(request):
@@ -32,3 +30,9 @@ def index(request):
                       {'some_text': str_result})
     else:
         return render(request, 'predictor/index.html', {})
+
+
+def auth(request):
+    if request.method == 'GET' and 'submit' in request.GET:
+        return HttpResponseRedirect(reverse('predictor:index'))
+    return render(request, 'predictor/auth.html', {})
