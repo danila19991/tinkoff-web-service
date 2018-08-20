@@ -3,12 +3,12 @@ import json
 
 from sklearn.metrics import mean_squared_error, r2_score
 
-from parsers.linear_model_parser import LinearModelParser as lmp
+from ml_algorithm.parsers.linear_model_parser import LinearModelParser as lmp
 
 
 class Tester:
 
-    def __init__(self, config_filename="ml_config.json", border=0.5):
+    def __init__(self, config_filename="ml_algorithm/ml_config.json", border=0.5):
         """
         Initializing object of main class with testing algorithm.
 

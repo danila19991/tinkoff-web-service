@@ -1,13 +1,13 @@
 import importlib
 import json
-import logger
+import ml_algorithm.logger as logger
 import pickle
-import tester
+import ml_algorithm.tester as tester
 
 import numpy as np
 import pandas as pd
 
-import parsers.linear_model_parser as lmp
+import ml_algorithm.parsers.linear_model_parser as lmp
 
 
 @logger.decor_class_logging_error_and_time(
@@ -16,7 +16,7 @@ import parsers.linear_model_parser as lmp
 )
 class Shell:
 
-    def __init__(self, config_filename="ml_config.json",
+    def __init__(self, config_filename="ml_algorithm/ml_config.json",
                  parser_instance=None, model_instance=None):
         """
         Constructor which initialize class fields.
@@ -54,7 +54,7 @@ class Shell:
 
         :return: instance of class_name from module_name
         """
-        module = importlib.import_module(module_name)
+        module = importlib.import_module('ml_algorithm.'+module_name)
         class_ = getattr(module, class_name)
         return class_()
 
@@ -125,6 +125,14 @@ class Shell:
 
         self.__predictions = self.__model.predict(validation_samples,
                                                   self.__validation_labels)
+
+    @property
+    def predictions(self):
+        predictions = [x.tolist() for x in self.__predictions]
+        int_prediction = [[int(round(x)) for x in lst] for lst in predictions]
+        predictions = [lmp.LinearModelParser.to_final_label2(x)
+                       for x in int_prediction]
+        return predictions
 
     def test(self):
         """

@@ -2,7 +2,7 @@ import numpy as np
 
 from sklearn.neighbors import KNeighborsRegressor
 
-from models import model
+from ml_algorithm.models import model
 
 
 class KNearestNeighborsModel(model.IModel):

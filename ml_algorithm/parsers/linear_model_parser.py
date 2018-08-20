@@ -2,7 +2,7 @@ import math
 
 import pandas as pd
 
-from parsers import parser
+from ml_algorithm.parsers import parser
 
 
 class LinearModelParser(parser.IParser):
