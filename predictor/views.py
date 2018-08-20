@@ -48,8 +48,12 @@ def register_page(request):
     return render(request, 'predictor/register.html', {})
 
 
-def require(request):
+def restore(request):
     if request.method == 'GET' and 'restore' in request.GET:
         return HttpResponseRedirect(reverse('predictor:auth'))
 
     return render(request, 'predictor/restore.html', {})
+
+
+def research_page(request):
+    return render(request, 'predictor/research.html', {})
