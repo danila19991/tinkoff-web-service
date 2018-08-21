@@ -17,6 +17,7 @@ def index(request):
             request.session['result'] = \
                 make_prediction(request.FILES['input_data'])
         except:
+            raise
             return render(request, 'predictor/index.html',
                           {'invalid_data': True})
 
