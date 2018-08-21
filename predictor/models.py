@@ -7,5 +7,5 @@ class AlgorithmSettings(models.Model):
     algorithm = models.CharField(max_length=128, default='ExtraTreesModel')
     metrics = models.CharField(max_length=128, default='MeanF1Score')
     parser = models.CharField(max_length=128, default='CommonParser')
-    with_debug = models.BooleanField()
+    with_debug = models.BooleanField(default=False)
 
