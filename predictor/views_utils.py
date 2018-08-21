@@ -1,10 +1,11 @@
 from mlalgorithms.shell import Shell
 
 
-def make_prediction(input_data):
+def make_prediction(input_data, result_data):
     sh = Shell()
-    sh.predict(input_data)
+    sh.train(input_data)
     sh.test()
+    sh.output(result_data)
     return sh.get_formatted_predictions()
 
 

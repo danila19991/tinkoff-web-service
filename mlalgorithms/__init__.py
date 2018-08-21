@@ -1,8 +1,4 @@
 from pathlib import Path
-from . import logger
-from . import tester
-from . import parsers
-from . import models
 
 
 def is_submodule(path):

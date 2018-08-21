@@ -2,7 +2,7 @@ import abc
 
 from sklearn.metrics import mean_squared_error, r2_score
 
-from .parsers.linear_model_parser import LinearModelParser
+from .parsers.common_parser import CommonParser
 
 
 class Tester:
@@ -189,8 +189,8 @@ class MeanF1Score(Metric):
 
         int_prediction = [int(round(x)) for x in prediction]
 
-        int_prediction = LinearModelParser.to_final_label(int_prediction)
-        validation_label = LinearModelParser.to_final_label(validation_label)
+        int_prediction = CommonParser.to_final_label(int_prediction)
+        validation_label = CommonParser.to_final_label(validation_label)
 
         conj = self.conjunction(int_prediction, validation_label)
 

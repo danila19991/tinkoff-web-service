@@ -17,17 +17,13 @@ class IModel(abc.ABC):
         raise NotImplementedError("Called abstract class method!")
 
     @abc.abstractmethod
-    def predict(self, validation_sample, validation_labels):
+    def predict(self, sample):
         """
         Makes predictions based on the transmitted data.
         User must override this method.
 
-        :param validation_sample: array-like, sparse matrix
+        :param sample: array-like, sparse matrix
             Data for prediction.
-
-        :param validation_labels: array-like, sparse matrix
-            Target values. Will be cast to validation_sample’s dtype if
-            necessary.
 
         :return: array
             Returns predicted values.
