@@ -17,9 +17,10 @@ def index(request):
         context['research_rights'] = True
     if request.method == 'POST' and 'input_data' in request.FILES:
         try:
-            request.session['result'] = \
-                make_prediction(request.FILES['input_data'])
-        except:
+            response = HttpResponse()
+            make_prediction(request.FILES['input_data'], response)
+            request.session['result'] = response.getvalue().decode()
+        except Exception:
             context['invalid_data'] = True
 
     if request.method == 'POST' and 'logout' in request.POST:
@@ -31,21 +32,15 @@ def index(request):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = \
             'attachment; filename="predictions.csv'
-
-        writer = csv.writer(response)
-        for row in request.session['result']:
-            writer.writerow(row)
-
+        response.write(request.session['result'])
         return response
 
     if 'result' in request.session:
-        # TODO: add another string view for list
-        str_result = ''
-        for row in request.session['result']:
-            str_result += str(row)[1:-1] + '\n'
-            if len(str_result) > 200:
-                break
-        context['result_description'] = str_result
+        if len(request.session['result']) > 200:
+            context['result_description'] = request.session['result'][0:200]\
+                                            + '...'
+        else:
+            context['result_description'] = request.session['result']
 
     return render(request, 'predictor/index.html', context)
 

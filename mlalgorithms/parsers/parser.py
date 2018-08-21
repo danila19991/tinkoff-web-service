@@ -43,7 +43,6 @@ class IParser(abc.ABC):
         """
         return pd.get_dummies(df)
 
-    @abc.abstractmethod
     def parse(self, filepath_or_buffer, to_list=False, **kwargs):
         """
         Parse data from csv, clean and return it as data frame or list.
@@ -71,9 +70,47 @@ class IParser(abc.ABC):
         return df
 
     @abc.abstractmethod
+    def parse_train_data(self, filepath_or_buffer):
+        """
+        Parse data from csv, clean and return it as data frame or list. Used to
+        work with train data.
+
+        :param filepath_or_buffer: str, pathlib.Path, py._path.local.LocalPath
+            or any object with a read() method (such as a file handle or
+            StringIO)
+            The string could be a URL. Valid URL schemes include http, ftp, s3,
+            and file. For file URLs, a host is expected. For instance, a local
+            file could be file://localhost/path/to/table.csv.
+
+        :return: pd.DataFrame, list
+            Returns result of pd.read_csv method or converted list.
+        """
+        raise NotImplementedError("Called abstract class method!")
+
+    @abc.abstractmethod
+    def parse_test_data(self, filepath_or_buffer_set, filepath_or_buffer_menu):
+        """
+        Parse data from csv, clean and return it as data frame or list. Used to
+        work with test data.
+
+        :param filepath_or_buffer_set: str, pathlib.Path,
+            py._path.local.LocalPath or any object with a read() method
+            (such as a file handle or StringIO)
+            The string could be a URL. Valid URL schemes include http, ftp, s3,
+            and file. For file URLs, a host is expected. For instance, a local
+            file could be file://localhost/path/to/table.csv.
+
+        :param filepath_or_buffer_menu: same as filepath_or_buffer_set.
+
+        :return: pd.DataFrame, list
+            Returns result of pd.read_csv method or converted list.
+        """
+        raise NotImplementedError("Called abstract class method!")
+
+    @abc.abstractmethod
     def get_train_data(self):
         """
-        Get data for model training.
+        Get data for model training from training set.
 
         :return: tuple of two array-like, sparse matrix
             Returns parsed data.
@@ -83,13 +120,22 @@ class IParser(abc.ABC):
     @abc.abstractmethod
     def get_validation_data(self):
         """
-        Get data for model prediction.
+        Get data for test model prediction from validate set.
 
         :return: tuple of two array-like, sparse matrix
             Returns parsed data.
         """
         raise NotImplementedError("Called abstract class method!")
 
+    @abc.abstractmethod
+    def get_test_data(self):
+        """
+        Get data for model prediction from test set.
+
+        :return: tuple of two array-like, sparse matrix
+            Returns parsed data.
+        """
+        raise NotImplementedError("Called abstract class method!")
 
 """
 Example of using parsers:

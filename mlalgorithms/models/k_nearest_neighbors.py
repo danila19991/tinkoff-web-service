@@ -13,9 +13,9 @@ class KNearestNeighborsModel(model.IModel):
     def train(self, train_samples, train_labels):
         self.model.fit(train_samples, train_labels)
 
-    def predict(self, validation_samples, validation_labels):
+    def predict(self, samples):
         predicts = []
-        for sample, label in zip(validation_samples, validation_labels):
+        for sample in samples:
             prediction = self.model.predict(np.array(sample).reshape(1, -1))[0]
             predicts.append(prediction)
         return predicts

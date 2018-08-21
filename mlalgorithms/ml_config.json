@@ -19,8 +19,8 @@
     "warm_start": false
   },
 
-  "parser_module_name": "mlalgorithms.parsers.linear_model_parser",
-  "parser_name": "LinearModelParser",
+  "parser_module_name": "mlalgorithms.parsers.common_parser",
+  "parser_name": "CommonParser",
   "parser_parameters": {
     "proportion": 0.7,
     "raw_data": false,
