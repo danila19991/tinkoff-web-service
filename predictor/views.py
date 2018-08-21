@@ -7,20 +7,22 @@ from predictor.views_utils import check_content
 from predictor.views_utils import is_email
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 
 @login_required(login_url='/auth')
 def index(request):
+    context = {}
+    if request.user.groups.filter(name='researcher').exists():
+        context['research_rights'] = True
     if request.method == 'POST' and 'input_data' in request.FILES:
         try:
             request.session['result'] = \
                 make_prediction(request.FILES['input_data'])
         except:
-            return render(request, 'predictor/index.html',
-                          {'invalid_data': True})
+            context['invalid_data'] = True
 
-    if request.method == 'GET' and 'logout' in request.GET:
+    if request.method == 'POST' and 'logout' in request.POST:
         logout(request)
         return HttpResponseRedirect(reverse('predictor:index'))
 
@@ -43,11 +45,9 @@ def index(request):
             str_result += str(row)[1:-1] + '\n'
             if len(str_result) > 200:
                 break
+        context['result_description'] = str_result
 
-        return render(request, 'predictor/index.html',
-                      {'result_description': str_result})
-    else:
-        return render(request, 'predictor/index.html', {})
+    return render(request, 'predictor/index.html', context)
 
 
 def auth(request):
@@ -90,10 +90,17 @@ def register_page(request):
         if error_context:
             return render(request, 'predictor/register.html', error_context)
 
-        User.objects.create_user(request.POST['email'], request.POST['email'],
-                                 request.POST['password'],
-                                 first_name=request.POST['first_name'],
-                                 last_name=request.POST['last_name'])
+        user = User.objects.create_user(request.POST['email'],
+                                        request.POST['email'],
+                                        request.POST['password'],
+                                        first_name=request.POST['first_name'],
+                                        last_name=request.POST['last_name'])
+
+        if 'is_researcher' in request.POST:
+            group = Group.objects.get_or_create(name='researcher')
+            user.groups.add(group[0])
+            user.save()
+
         return HttpResponseRedirect(reverse('predictor:auth'))
     return render(request, 'predictor/register.html', {})
 
@@ -107,7 +114,10 @@ def restore(request):
 
 @login_required(login_url='/auth')
 def research_page(request):
-    if request.method == 'GET' and 'logout' in request.GET:
+    if not request.user.groups.filter(name='researcher').exists():
+        return HttpResponseRedirect(reverse('predictor:index'))
+
+    if request.method == 'POST' and 'logout' in request.POST:
         logout(request)
         return HttpResponseRedirect(reverse('predictor:research'))
 
