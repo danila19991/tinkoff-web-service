@@ -1,4 +1,8 @@
 from pathlib import Path
+from . import logger
+from . import tester
+from . import parsers
+from . import models
 
 
 def is_submodule(path):
@@ -10,8 +14,3 @@ def is_submodule(path):
 
 
 __all__ = [p.stem for p in Path(__file__).parent.iterdir() if is_submodule(p)]
-
-from . import logger
-from . import tester
-from . import parsers
-from . import models
