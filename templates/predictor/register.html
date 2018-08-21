@@ -29,20 +29,23 @@
 		    	    	<div class="col-6" >
 			    			<div class="input-group mb-3">
                                 <div class="input-group-prepend">
-                                    <span class="input-group-text" id="fname">First name</span>
+                                    <span class="input-group-text">First name</span>
                                 </div>
-                              <input type="text" name="first_name" class="form-control" id="fname1" aria-describedby="basic-addon3">
+                              <input type="text" name="first_name" class="form-control" aria-describedby="basic-addon3">
                             </div>
 
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
-                                    <span class="input-group-text" id="email">Email</span>
+                                    <span class="input-group-text">Login</span>
                                 </div>
+                              <input type="text" name="login" class="form-control" aria-describedby="basic-addon3">
+                            </div>
 
-                                <input type="text" name="email" class="form-control" id="email1" aria-describedby="basic-addon3" placeholder="Enter your corporate email">
-                                <div class="input-group-append">
-                                    <span class="input-group-text" id="email_postfix">@tinkoff.ru</span>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Email</span>
                                 </div>
+                              <input type="text" name="email" class="form-control" aria-describedby="basic-addon3">
                             </div>
 
     					</div>
@@ -62,10 +65,15 @@
                               <input type="password" name="password" class="form-control" id="pass1" aria-describedby="basic-addon3" placeholder="Generate a password">
                             </div>
 
+                            <div class="input-group mb-3">
+                                <div class="custom-control custom-checkbox" style="padding-top: 7px">
+                                    <input type="checkbox" class="custom-control-input" id="customCheck1" name="is_researcher">
+                                    <label class="custom-control-label" for="customCheck1">Is researcher</label>
+                                </div>
+                            </div>
     			        </div>
 	    			</div>
                 </div>
-                <input type="checkbox" name="is_researcher">
                 <button type="submit" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="register">Register</button>
             </form>
 
