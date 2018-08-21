@@ -1,10 +1,7 @@
-import csv
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
-from predictor.views_utils import make_prediction
-from predictor.views_utils import check_content
-from predictor.views_utils import is_email
+from predictor.views_utils import make_prediction, check_content, is_email
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
