@@ -1,42 +1,54 @@
-import ml_algorithm.logger as logger
 import pickle
-import ml_algorithm.tester as tester
+import os.path
 
 import numpy as np
 import pandas as pd
 
-import ml_algorithm.parsers.parser as ipar
-import ml_algorithm.parsers.linear_model_parser as lmp
-import ml_algorithm.parsers.config_parsers as cnfp
+from .logger import decor_class_logging_error_and_time, setup_logging
 
-import ml_algorithm.models.model as mdl
+from .tester import Tester
+
+from .parsers.parser import IParser
+from .parsers.linear_model_parser import LinearModelParser
+from .parsers.config_parsers import ConfigParser
+
+from .models.model import IModel
 
 
-@logger.decor_class_logging_error_and_time()
+my_path = os.path.abspath(os.path.dirname(__file__))
+ml_config_path = os.path.join(my_path, "ml_config.json")
+log_config_path = os.path.join(my_path, "log_config.json")
+
+setup_logging(log_config_path)
+
+
+@decor_class_logging_error_and_time()
 class Shell:
 
-    def __init__(self, config_filename="ml_algorithm/ml_config.json"):
+    def __init__(self, model_exists=False):
         """
         Constructor which initialize class fields.
 
-        :param config_filename: str, optional (default="ml_config.json")
+        :param model_exists: bool, optional (default=False)
             Name of the json file with configuration.
         """
         self._validation_labels = None
         self._predictions = None
-        self._config_parser = cnfp.ConfigParser(config_filename)
-        self._tester = tester.Tester(
+        self._config_parser = ConfigParser(ml_config_path)
+        self._tester = Tester(
             self._config_parser["metric_name"]
         )
 
         self._model_parameters = self._config_parser["model_parameters"]
         self._parser_parameters = self._config_parser["parser_parameters"]
 
-        self._model = self._config_parser.get_instance(
-            self._config_parser["model_name"],
-            self._config_parser["model_module_name"],
-            **self._model_parameters
-        )
+        if not model_exists:
+            self._model = self._config_parser.get_instance(
+                self._config_parser["model_name"],
+                self._config_parser["model_module_name"],
+                **self._model_parameters
+            )
+
         self._parser = self._config_parser.get_instance(
             self._config_parser["parser_name"],
             self._config_parser["parser_module_name"],
@@ -80,8 +92,8 @@ class Shell:
         :return: bool
             Status of verifying.
         """
-        check1 = self._check_interface(self._parser, ipar.IParser)
-        check2 = self._check_interface(self._model, mdl.IModel)
+        check1 = self._check_interface(self._parser, IParser)
+        check2 = self._check_interface(self._model, IModel)
         return check1 and check2
 
     def is_debug(self, flag_name="debug"):
@@ -115,7 +127,7 @@ class Shell:
         """
         predictions = [x.tolist() for x in self._predictions]
         int_prediction = [[int(round(x)) for x in lst] for lst in predictions]
-        predictions = [lmp.LinearModelParser.to_final_label(x)
+        predictions = [LinearModelParser.to_final_label(x)
                        for x in int_prediction]
         return predictions
 
@@ -133,7 +145,7 @@ class Shell:
 
     def predict(self, filepath_or_buffer, **kwargs):
         """
-        Make prediction for input dataset.
+        Train model on input dataset.
 
         :param filepath_or_buffer: str, pathlib.Path, py._path.local.LocalPath
             or any object with a read() method (such as a file handle or
@@ -154,6 +166,9 @@ class Shell:
         self._predictions = self._model.predict(validation_samples,
                                                 self._validation_labels)
 
+    def train(self):
+        pass
+
     def test(self):
         """
         Test prediction quality of algorithm.
@@ -167,6 +182,16 @@ class Shell:
         print(f"Metrics: {test_result}")
         print(f"Quality satisfaction: {quality}")
 
+    def load_model(self, filename="model"):
+        """
+        Load trained model with all parameters from file.
+
+        :param filename: str, optional (default="model")
+            Filename of model.
+        """
+        with open(f"models/{filename}.mdl", "rb") as input_stream:
+            self._model = pickle.loads(input_stream.read())
+
     def save_model(self, filename="model"):
         """
         Save trained model with all parameters to file.
@@ -176,26 +201,3 @@ class Shell:
         """
         with open(f"models/{filename}.mdl", "wb") as output_stream:
             output_stream.write(pickle.dumps(self._model.model))
-
-
-def test_linear():
-    sh = Shell()
-    sh.predict("data/tinkoff/train.csv")
-    sh.test()
-    sh.output()
-
-
-def main():
-    logger.setup_logging()
-    test_linear()
-
-    # Example of execution:
-    # sh = Shell()
-    # sh.predict()
-    # sh.test()
-    # sh.save_model()
-    # sh.output()
-
-
-if __name__ == "__main__":
-    main()

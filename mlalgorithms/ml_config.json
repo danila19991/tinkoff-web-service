@@ -1,5 +1,5 @@
 {
-  "model_module_name": "ml_algorithm.models.random_forest",
+  "model_module_name": "mlalgorithms.models.random_forest",
   "model_name": "ExtraTreesModel",
   "model_parameters": {
     "n_estimators": 10,
@@ -19,7 +19,7 @@
     "warm_start": false
   },
 
-  "parser_module_name": "ml_algorithm.parsers.linear_model_parser",
+  "parser_module_name": "mlalgorithms.parsers.linear_model_parser",
   "parser_name": "LinearModelParser",
   "parser_parameters": {
     "proportion": 0.7,

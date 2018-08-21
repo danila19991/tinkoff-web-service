@@ -1,4 +1,4 @@
-from ml_algorithm.shell import Shell
+from mlalgorithms.shell import Shell
 
 
 def make_prediction(input_data):

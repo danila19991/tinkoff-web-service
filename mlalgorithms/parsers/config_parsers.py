@@ -39,6 +39,7 @@ class ConfigParser:
 
         :return: type of class_name from module_name
         """
+        importlib.invalidate_caches()
         module = importlib.import_module(module_name)
         return getattr(module, class_name)
 

@@ -2,7 +2,7 @@ import abc
 
 from sklearn.metrics import mean_squared_error, r2_score
 
-from ml_algorithm.parsers.linear_model_parser import LinearModelParser
+from .parsers.linear_model_parser import LinearModelParser
 
 
 class Tester:

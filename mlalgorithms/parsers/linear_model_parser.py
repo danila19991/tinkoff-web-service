@@ -1,6 +1,6 @@
 import pandas as pd
 
-from ml_algorithm.parsers import parser
+from . import parser
 
 
 class LinearModelParser(parser.IParser):

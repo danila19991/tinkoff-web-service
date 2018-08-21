@@ -8,7 +8,7 @@ import time
 # TODO(Timur): need to write doc for your functions. And you nothing wrote
 #              about parameters of your functions.
 def setup_logging(config_filename="log_config.json"):
-    with open(config_filename, 'r') as logging_configuration_file:
+    with open(config_filename, "r") as logging_configuration_file:
         config = json.load(logging_configuration_file)
     logging.config.dictConfig(config)
 
