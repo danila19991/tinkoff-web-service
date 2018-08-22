@@ -1,15 +1,14 @@
 import numpy as np
 
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import RidgeCV
+from sklearn.ensemble import ExtraTreesRegressor
 
 from . import model
 
 
-class LinearModel(model.IModel):
+class ExtraTreesModel(model.IModel):
 
     def __init__(self, **kwargs):
-        self.model = LinearRegression(**kwargs)
+        self.model = ExtraTreesRegressor(**kwargs)
 
     def train(self, train_samples, train_labels, **kwargs):
         self.model.fit(train_samples, train_labels, **kwargs)
@@ -21,9 +20,3 @@ class LinearModel(model.IModel):
             predicts.append(prediction)
         return predicts
 
-
-class RidgeCVModel(LinearModel):
-
-    def __init__(self, **kwargs):
-        super().__init__()
-        self.model = RidgeCV(**kwargs)
