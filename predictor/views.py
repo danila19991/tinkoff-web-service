@@ -107,7 +107,7 @@ def register_page(request):
     if request.method == 'POST':
         # Check necessary fields.
         necessary_fields = ('first_name', 'last_name', 'email', 'password',
-                            'login')
+                            'login', 'question', 'password_double', 'answer')
         error_context = check_content(necessary_fields, request.POST)
 
         # Check main fields
@@ -116,6 +116,8 @@ def register_page(request):
                 error_context['another_name'] = True
             if User.objects.filter(email=request.POST['email']):
                 error_context['another_name'] = True
+            if request.POST['password'] != request.POST['password_double']:
+                error_context['not_match_passwords'] = True
             if not is_email(request.POST['email']):
                 error_context['another_email'] = True
 
@@ -129,7 +131,9 @@ def register_page(request):
                                         first_name=request.POST['first_name'],
                                         last_name=request.POST['last_name'])
 
-        user_settings = AlgorithmSettings(user=user)
+        user_settings = AlgorithmSettings(user=user,
+                                          question=request.POST['question'],
+                                          answer=request.POST['answer'])
         user_settings.save()
 
         if 'is_researcher' in request.POST:
