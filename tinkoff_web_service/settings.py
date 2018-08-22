@@ -121,7 +121,7 @@ LOGGING = {
     }
 }
 
-TEXT_FIELD_MAX_LENGTH = 800
+TEXT_FIELD_MAX_LENGTH = 1024
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
