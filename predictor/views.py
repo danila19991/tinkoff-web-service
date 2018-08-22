@@ -34,8 +34,8 @@ def index(request):
         return response
 
     if 'result' in request.session:
-        if len(request.session['result']) > 200:
-            context['result_description'] = request.session['result'][0:200]\
+        if len(request.session['result']) > 800:
+            context['result_description'] = request.session['result'][0:800]\
                                             + '...'
         else:
             context['result_description'] = request.session['result']
