@@ -1,33 +1,152 @@
 {
-  "model_module_name": "mlalgorithms.models.random_forest",
-  "model_name": "ExtraTreesModel",
-  "model_parameters": {
-    "n_estimators": 10,
-    "criterion": "mse",
-    "max_features": "auto",
-    "max_depth": null,
-    "min_samples_split": 2,
-    "min_samples_leaf": 1,
-    "min_weight_fraction_leaf": 0.0,
-    "max_leaf_nodes": null,
-    "min_impurity_decrease": 0.0,
-    "bootstrap": false,
-    "oob_score": false,
-    "n_jobs": 1,
-    "random_state": null,
-    "verbose": 0,
-    "warm_start": false
-  },
+  "selected_model": "ExtraTreesModel",
+  "models": [
+    {
+      "model_module_name": "mlalgorithms.models.linear_model",
+      "model_name": "LinearModel",
 
-  "parser_module_name": "mlalgorithms.parsers.common_parser",
-  "parser_name": "CommonParser",
-  "parser_parameters": {
-    "proportion": 0.7,
-    "raw_data": false,
-    "n_rows": null
-  },
+      "model_params": {
+        "fit_intercept": true,
+        "normalize": false,
+        "copy_X": true,
+        "n_jobs": 1
+      }
+    },
 
-  "metric_name": "MeanF1Score",
+    {
+      "model_module_name": "mlalgorithms.models.k_nearest_neighbors",
+      "model_name": "KNearestNeighborsModel",
+
+      "model_params": {
+        "n_neighbors": 5,
+        "weights": "uniform",
+        "algorithm": "auto",
+        "leaf_size": 30,
+        "p": 2,
+        "metric": "minkowski",
+        "metric_params": null,
+        "n_jobs": 1
+      }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.models.extra_trees",
+      "model_name": "ExtraTreesModel",
+
+      "model_params": {
+        "n_estimators": 10,
+        "criterion": "mse",
+        "max_features": "auto",
+        "max_depth": null,
+        "min_samples_split": 2,
+        "min_samples_leaf": 1,
+        "min_weight_fraction_leaf": 0.0,
+        "max_leaf_nodes": null,
+        "min_impurity_decrease": 0.0,
+        "bootstrap": false,
+        "oob_score": false,
+        "n_jobs": 1,
+        "random_state": null,
+        "verbose": 0,
+        "warm_start": false
+      }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.models.catboost_model",
+      "model_name": "CatBoostModel",
+
+      "model_params": {
+        "iterations": null,
+        "learning_rate": null,
+        "depth": null,
+        "l2_leaf_reg": null,
+        "model_size_reg": null,
+        "rsm": null,
+        "loss_function": "RMSE",
+        "border_count": null,
+        "feature_border_type": null,
+        "fold_permutation_block_size": null,
+        "od_pval": null,
+        "od_wait": null,
+        "od_type": null,
+        "nan_mode": null,
+        "counter_calc_method": null,
+        "leaf_estimation_iterations": null,
+        "leaf_estimation_method": null,
+        "thread_count": null,
+        "random_seed": null,
+        "use_best_model": null,
+        "verbose": null,
+        "logging_level": null,
+        "metric_period": null,
+        "ctr_leaf_count_limit": null,
+        "store_all_simple_ctr": null,
+        "max_ctr_complexity": null,
+        "has_time": null,
+        "allow_const_label": null,
+        "one_hot_max_size": null,
+        "random_strength": null,
+        "name": null,
+        "ignored_features": null,
+        "train_dir": null,
+        "custom_metric": null,
+        "eval_metric": null,
+        "bagging_temperature": null,
+        "save_snapshot": null,
+        "snapshot_file": null,
+        "fold_len_multiplier": null,
+        "used_ram_limit": null,
+        "gpu_ram_part": null,
+        "allow_writing_files": null,
+        "final_ctr_computation_mode": null,
+        "approx_on_full_history": null,
+        "boosting_type": null,
+        "simple_ctr": null,
+        "combinations_ctr": null,
+        "per_feature_ctr": null,
+        "task_type": null,
+        "device_config": null,
+        "devices": null,
+        "bootstrap_type": null,
+        "subsample": null,
+        "max_depth": null,
+        "n_estimators": null,
+        "num_boost_round": null,
+        "num_trees": null,
+        "colsample_bylevel": null,
+        "random_state": null,
+        "reg_lambda": null,
+        "objective": null,
+        "eta": null,
+        "max_bin": null,
+        "gpu_cat_features_storage": null,
+        "data_partition": null,
+        "metadata": null
+      }
+    }
+  ],
+
+  "selected_parser": "CommonParser",
+  "parsers": [
+    {
+      "parser_module_name": "mlalgorithms.parsers.common_parser",
+      "parser_name": "CommonParser",
+
+      "parser_params": {
+        "proportion": 0.7,
+        "raw_date": true,
+        "n_rows": 1000,
+        "not_parse_data": false
+      }
+    }
+  ],
+
+  "selected_metric": "f1",
+  "metrics": {
+    "mse": "MeanSquadError",
+    "f1": "MeanF1Score"
+  },
 
   "debug": false
 }
