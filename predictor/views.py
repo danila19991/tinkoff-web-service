@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from predictor.views_utils import make_prediction, check_content, is_email
@@ -34,9 +35,10 @@ def index(request):
         return response
 
     if 'result' in request.session:
-        if len(request.session['result']) > 800:
-            context['result_description'] = request.session['result'][0:800]\
-                                            + '...'
+        if len(request.session['result']) > settings.TEXT_FIELD_MAX_LENGTH:
+            context['result_description'] = \
+                request.session['result'][0:settings.TEXT_FIELD_MAX_LENGTH]\
+                + '...'
         else:
             context['result_description'] = request.session['result']
 
