@@ -1,13 +1,11 @@
-import csv
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
-from predictor.views_utils import make_prediction
-from predictor.views_utils import check_content
-from predictor.views_utils import is_email
+from predictor.views_utils import make_prediction, check_content, is_email
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
+from .models import AlgorithmSettings
 
 
 @login_required(login_url='/auth')
@@ -72,12 +70,13 @@ def auth(request):
 
 def register_page(request):
     if request.method == 'POST':
-        necessary_fields = ('first_name', 'last_name', 'email', 'password')
+        necessary_fields = ('first_name', 'last_name', 'email', 'password',
+                            'login')
 
         error_context = check_content(necessary_fields, request.POST)
 
         if not error_context:
-            if User.objects.filter(username=request.POST['email']):
+            if User.objects.filter(username=request.POST['login']):
                 error_context['another_name'] = True
             if is_email(request.POST['email']):
                 error_context['another_email'] = True
@@ -85,11 +84,14 @@ def register_page(request):
         if error_context:
             return render(request, 'predictor/register.html', error_context)
 
-        user = User.objects.create_user(request.POST['email'],
+        user = User.objects.create_user(request.POST['login'],
                                         request.POST['email'],
                                         request.POST['password'],
                                         first_name=request.POST['first_name'],
                                         last_name=request.POST['last_name'])
+
+        user_settings = AlgorithmSettings(user=user)
+        user_settings.save()
 
         if 'is_researcher' in request.POST:
             group = Group.objects.get_or_create(name='researcher')
