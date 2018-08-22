@@ -44,7 +44,75 @@
     <div class="card-body" align="center">
         <form action="{% url 'predictor:index' %}" method="post"  enctype="multipart/form-data">
             {% csrf_token %}
-            <h1 class="display-4">Research</h1>
+            <h1 class="display-4" style="margin-bottom: 25px">Research</h1>
+
+            <form method="post">
+                {% csrf_token %}
+
+
+                <div class="row" style="padding-left: 10%; padding-right: 10%">
+                    <div class="col-6" >
+                        <a> .</a>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Algorithm's name</span>
+                            </div>
+                            <input type="text" name="modelName" class="form-control" placeholder="Enter name of the algorithm">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Parser's name</span>
+                            </div>
+                            <input type="text" name="parserName" class="form-control" placeholder="Enter name of the parser">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Metric's name</span>
+                            </div>
+                            <input type="text" name="metricName" class="form-control" placeholder="Enter name of the metric">
+                        </div>
+
+
+
+                    </div>
+                    <div class="col-6" align="left">
+                        <a>You can upload file with your algorithm:</a>
+                        <div class="input-group mb-3">
+                            <div class="custom-file" >
+                                <input type="file" class="custom-file-input" id="alg" name="input_alg">
+                                <label class="custom-file-label" for="alg">Choose file</label>
+                            </div>
+                        </div>
+
+                        <a>You can upload file with your parser:</a>
+                        <div class="input-group mb-3">
+                            <div class="custom-file" >
+                                <input type="file" class="custom-file-input" id="par" name="input_par">
+                                <label class="custom-file-label" for="alg">Choose file</label>
+                            </div>
+                        </div>
+
+                        <a>You can upload file with your metric:</a>
+                        <div class="input-group mb-3">
+                            <div class="custom-file" >
+                                <input type="file" class="custom-file-input" id="met" name="input_met">
+                                <label class="custom-file-label" for="met">Choose file</label>
+                            </div>
+                        </div>
+
+                        <script>
+                            $('.custom-file-input').on('change', function() {
+                               let fileName = $(this).val().split('\\').pop();
+                               $(this).next('.custom-file-label').addClass("selected").html(fileName);
+                            });
+                        </script>
+                    </div>
+                </div>
+
+				<button type="submit" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="submit">Submit</button>
+			</form>
 
         </form>
     </div>
