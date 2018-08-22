@@ -1,26 +1,27 @@
-import csv
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
-from predictor.views_utils import make_prediction
-from predictor.views_utils import check_content
-from predictor.views_utils import is_email
+from predictor.views_utils import make_prediction, check_content, is_email
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
+from .models import AlgorithmSettings
 
 
 @login_required(login_url='/auth')
 def index(request):
+    context = {}
+    if request.user.groups.filter(name='researcher').exists():
+        context['research_rights'] = True
     if request.method == 'POST' and 'input_data' in request.FILES:
         try:
-            request.session['result'] = \
-                make_prediction(request.FILES['input_data'])
-        except:
-            return render(request, 'predictor/index.html',
-                          {'invalid_data': True})
+            response = HttpResponse()
+            make_prediction(request.FILES['input_data'], response)
+            request.session['result'] = response.getvalue().decode()
+        except Exception:
+            context['invalid_data'] = True
 
-    if request.method == 'GET' and 'logout' in request.GET:
+    if request.method == 'POST' and 'logout' in request.POST:
         logout(request)
         return HttpResponseRedirect(reverse('predictor:index'))
 
@@ -29,25 +30,17 @@ def index(request):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = \
             'attachment; filename="predictions.csv'
-
-        writer = csv.writer(response)
-        for row in request.session['result']:
-            writer.writerow(row)
-
+        response.write(request.session['result'])
         return response
 
     if 'result' in request.session:
-        # TODO: add another string view for list
-        str_result = ''
-        for row in request.session['result']:
-            str_result += str(row)[1:-1] + '\n'
-            if len(str_result) > 200:
-                break
+        if len(request.session['result']) > 200:
+            context['result_description'] = request.session['result'][0:200]\
+                                            + '...'
+        else:
+            context['result_description'] = request.session['result']
 
-        return render(request, 'predictor/index.html',
-                      {'result_description': str_result})
-    else:
-        return render(request, 'predictor/index.html', {})
+    return render(request, 'predictor/index.html', context)
 
 
 def auth(request):
@@ -77,12 +70,13 @@ def auth(request):
 
 def register_page(request):
     if request.method == 'POST':
-        necessary_fields = ('first_name', 'last_name', 'email', 'password')
+        necessary_fields = ('first_name', 'last_name', 'email', 'password',
+                            'login')
 
         error_context = check_content(necessary_fields, request.POST)
 
         if not error_context:
-            if User.objects.filter(username=request.POST['email']):
+            if User.objects.filter(username=request.POST['login']):
                 error_context['another_name'] = True
             if is_email(request.POST['email']):
                 error_context['another_email'] = True
@@ -90,10 +84,20 @@ def register_page(request):
         if error_context:
             return render(request, 'predictor/register.html', error_context)
 
-        User.objects.create_user(request.POST['email'], request.POST['email'],
-                                 request.POST['password'],
-                                 first_name=request.POST['first_name'],
-                                 last_name=request.POST['last_name'])
+        user = User.objects.create_user(request.POST['login'],
+                                        request.POST['email'],
+                                        request.POST['password'],
+                                        first_name=request.POST['first_name'],
+                                        last_name=request.POST['last_name'])
+
+        user_settings = AlgorithmSettings(user=user)
+        user_settings.save()
+
+        if 'is_researcher' in request.POST:
+            group = Group.objects.get_or_create(name='researcher')
+            user.groups.add(group[0])
+            user.save()
+
         return HttpResponseRedirect(reverse('predictor:auth'))
     return render(request, 'predictor/register.html', {})
 
@@ -107,7 +111,10 @@ def restore(request):
 
 @login_required(login_url='/auth')
 def research_page(request):
-    if request.method == 'GET' and 'logout' in request.GET:
+    if not request.user.groups.filter(name='researcher').exists():
+        return HttpResponseRedirect(reverse('predictor:index'))
+
+    if request.method == 'POST' and 'logout' in request.POST:
         logout(request)
         return HttpResponseRedirect(reverse('predictor:research'))
 

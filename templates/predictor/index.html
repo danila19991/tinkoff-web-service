@@ -26,11 +26,13 @@
 						  	<li class="nav-item" style="padding-top: 5px">
 						    	<a class="nav-link active" href="">Prediction</a>
 						  	</li>
-                            <form>
-                                <li class="nav-item" style="padding-top: 5px">
-                                    <a class="nav-link" href="{% url 'predictor:research' %}" style="color: rgba(0,0,0,.5);" name="research">Research</a>
-                                </li>
-                            </form>
+                            {% if research_rights %}
+                                <form>
+                                    <li class="nav-item" style="padding-top: 5px">
+                                        <a class="nav-link" href="{% url 'predictor:research' %}" style="color: rgba(0,0,0,.5);" name="research">Research</a>
+                                    </li>
+                                </form>
+                            {% endif %}
 						</ul>
 					</div>
 
@@ -38,7 +40,8 @@
 
 			            <ul class="nav nav-pills card-header-pills justify-content-end">
 			              <li class="nav-item">
-                              <form>
+                              <form method="post">
+                                  {% csrf_token %}
                                   <button type="submit" class="btn btn-block" name="logout" style="background-color: rgba(0,0,0,.125)">
                                       Logout
                                   </button>
@@ -80,7 +83,7 @@
 			    <p align="left" style="margin-bottom: 5px">Output statistic:</p>
 			    <textarea rows="15" readonly style="width: 100%">{{ result_description }}</textarea>
 
-                <form action="{% url 'predictor:index' %}" method="get">
+                <form>
 				<button type="submit" class="btn btn-block" name="download" style="background-color: #ffdd2d;" style="color: #ffdd2d;">
 			    Download results</button>
                 </form>
