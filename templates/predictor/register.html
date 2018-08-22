@@ -48,32 +48,54 @@
                               <input type="text" name="email" class="form-control" aria-describedby="basic-addon3">
                             </div>
 
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Secret question</span>
+                                </div>
+                              <input type="text" name="question" class="form-control" aria-describedby="basic-addon3">
+                            </div>
+
     					</div>
 
 	    				<div class="col-6">
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
-                                    <span class="input-group-text" id="lname">Last name</span>
+                                    <span class="input-group-text">Last name</span>
                                 </div>
-                              <input type="text" name="last_name" class="form-control" id="lname1" aria-describedby="basic-addon3">
+                              <input type="text" name="last_name" class="form-control" aria-describedby="basic-addon3">
                             </div>
 
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
-                                    <span class="input-group-text" id="pass">Password</span>
+                                    <span class="input-group-text">Password</span>
                                 </div>
-                              <input type="password" name="password" class="form-control" id="pass1" aria-describedby="basic-addon3" placeholder="Generate a password">
+                              <input type="password" name="password" class="form-control" aria-describedby="basic-addon3" placeholder="Generate a password">
                             </div>
 
                             <div class="input-group mb-3">
-                                <div class="custom-control custom-checkbox" style="padding-top: 7px">
-                                    <input type="checkbox" class="custom-control-input" id="customCheck1" name="is_researcher">
-                                    <label class="custom-control-label" for="customCheck1">Is researcher</label>
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Password</span>
                                 </div>
+                              <input type="password" name="password_double" class="form-control" aria-describedby="basic-addon3" placeholder="Enter password again">
                             </div>
+
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Answer to the question</span>
+                                </div>
+                              <input type="text" name="answer" class="form-control" aria-describedby="basic-addon3">
+                            </div>
+
     			        </div>
 	    			</div>
                 </div>
+
+
+                <div class="custom-control custom-checkbox" style="padding-top: 7px">
+                    <input type="checkbox" class="custom-control-input" id="customCheck1" name="is_researcher">
+                    <label class="custom-control-label" for="customCheck1">Is researcher</label>
+                </div>
+
                 <button type="submit" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="register">Register</button>
             </form>
 

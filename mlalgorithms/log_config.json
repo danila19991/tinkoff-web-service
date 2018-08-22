@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "disable_existing_loggers": false,
   "formatters":
   {
     "simple":
@@ -35,17 +36,11 @@
   },
   "loggers":
   {
-    "Main":
+    "mlalgorithms":
     {
       "level": "DEBUG",
       "handlers": ["console", "file"],
       "propagate": 0
     }
-  },
-  "root":
-  {
-      "level": "DEBUG",
-      "handlers": ["console", "file"],
-      "propagate": 0
   }
 }
