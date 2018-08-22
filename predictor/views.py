@@ -26,10 +26,18 @@ def index(request):
         context['research_rights'] = True
 
     # Processing user uploading files for calculating prediction.
-    if request.method == 'POST' and 'input_data' in request.FILES:
+    if request.method == 'POST' and 'code' in request.POST:
+        # Check necessary files.
+        necessary_fields = ('input_data', 'input_menu')
+        error_context = check_content(necessary_fields, request.FILES)
+        if error_context:
+            for key in context.keys():
+                error_context[key] = context[key]
+            return render(request, 'predictor/index.html', error_context)
         try:
             response = HttpResponse()
-            make_prediction(request.FILES['input_data'], response)
+            make_prediction(request.FILES['input_data'],
+                            request.FILES['input_menu'], response)
             request.session['result'] = response.getvalue().decode()
         except Exception:
             context['invalid_data'] = True

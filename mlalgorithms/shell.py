@@ -58,7 +58,8 @@ class Shell:
             debug=self.is_debug()
         )
 
-        assert self._check_interfaces()
+        if not existing_model_name:
+            assert self._check_interfaces()
 
     def _check_interface(self, instance, parent_class):
         """
@@ -118,7 +119,7 @@ class Shell:
         :return: bool
             Value of the flag.
         """
-        return self._parser_parameters[2][flag_name]
+        return self._parser_parameters['params'][flag_name]
 
     def get_formatted_predictions(self, raw_data=False):
         """
@@ -187,7 +188,7 @@ class Shell:
 
         if self._config_parser["selected_model"] == "CatBoostModel":
             train_samples, train_labels = self._parser.get_train_data()
-            train_num = int(self._parser_parameters[2]["proportion"] *
+            train_num = int(self._parser_parameters['params']["proportion"] *
                             len(train_samples))
             self._model.train(
                 train_samples[:train_num], train_labels[:train_num],

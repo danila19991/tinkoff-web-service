@@ -2,19 +2,21 @@ from mlalgorithms.shell import Shell
 
 
 # todo get model from db not train
-def make_prediction(input_data, result_data):
+def make_prediction(input_data, menu_data, result_data):
     """
     Function for make prediction on trained model.
 
     :param input_data: File
     Test data for getting prediction.
 
+    :param menu_data: File
+    Menu data for prediction.
+
     :param result_data: File
     Result of prediction in needed format.
     """
-    sh = Shell()
-    sh.train(input_data)
-    sh.test()
+    sh = Shell(existing_model_name='forest_model')
+    sh.predict(input_data, menu_data)
     sh.output(result_data)
 
 
