@@ -1,5 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+	<title>Data analyser</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+
+</head>
 <body>
 <div class="card text-center border-white">
 
@@ -41,78 +51,94 @@
             </div>
         </div>
     </div>
+
     <div class="card-body" align="center">
-        <form action="{% url 'predictor:index' %}" method="post"  enctype="multipart/form-data">
+        <h1 class="display-4" style="margin-bottom: 25px">Research</h1>
+        <form action="{% url 'predictor:research' %}" method="post"  enctype="multipart/form-data">
             {% csrf_token %}
-            <h1 class="display-4" style="margin-bottom: 25px">Research</h1>
-
-            <form method="post">
-                {% csrf_token %}
-
-
-                <div class="row" style="padding-left: 10%; padding-right: 10%">
-                    <div class="col-6" >
-                        <a> .</a>
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">Algorithm's name</span>
-                            </div>
-                            <input type="text" name="modelName" class="form-control" placeholder="Enter name of the algorithm">
+            <div class="row" style="padding-left: 10%; padding-right: 10%; margin-top: 40px">
+                <div class="col-6" >
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Algorithm's name</span>
                         </div>
-
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">Parser's name</span>
-                            </div>
-                            <input type="text" name="parserName" class="form-control" placeholder="Enter name of the parser">
-                        </div>
-
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">Metric's name</span>
-                            </div>
-                            <input type="text" name="metricName" class="form-control" placeholder="Enter name of the metric">
-                        </div>
-
-
-
+                        <input type="text" name="modelName" class="form-control" placeholder="Enter name of the algorithm">
                     </div>
-                    <div class="col-6" align="left">
-                        <a>You can upload file with your algorithm:</a>
-                        <div class="input-group mb-3">
-                            <div class="custom-file" >
-                                <input type="file" class="custom-file-input" id="alg" name="input_alg">
-                                <label class="custom-file-label" for="alg">Choose file</label>
-                            </div>
-                        </div>
 
-                        <a>You can upload file with your parser:</a>
-                        <div class="input-group mb-3">
-                            <div class="custom-file" >
-                                <input type="file" class="custom-file-input" id="par" name="input_par">
-                                <label class="custom-file-label" for="alg">Choose file</label>
-                            </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Parser's name</span>
                         </div>
+                        <input type="text" name="parserName" class="form-control" placeholder="Enter name of the parser">
+                    </div>
 
-                        <a>You can upload file with your metric:</a>
-                        <div class="input-group mb-3">
-                            <div class="custom-file" >
-                                <input type="file" class="custom-file-input" id="met" name="input_met">
-                                <label class="custom-file-label" for="met">Choose file</label>
-                            </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Metric's name</span>
                         </div>
-
-                        <script>
-                            $('.custom-file-input').on('change', function() {
-                               let fileName = $(this).val().split('\\').pop();
-                               $(this).next('.custom-file-label').addClass("selected").html(fileName);
-                            });
-                        </script>
+                        <input type="text" name="metricName" class="form-control" placeholder="Enter name of the metric">
                     </div>
                 </div>
+                <div class="col-6" align="left">
+                    <div class="input-group mb-3">
+                        <div class="custom-file" >
+                            <input type="file" class="custom-file-input" id="alg" name="input_alg">
+                            <label class="custom-file-label" for="alg">You can upload file with your algorithm</label>
+                        </div>
+                    </div>
 
-				<button type="submit" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="submit">Submit</button>
-			</form>
+                    <div class="input-group mb-3">
+                        <div class="custom-file" >
+                            <input type="file" class="custom-file-input" id="par" name="input_par">
+                            <label class="custom-file-label" for="par">You can upload file with your parser</label>
+                        </div>
+                    </div>
+
+
+                    <div class="input-group mb-3">
+                        <div class="custom-file" >
+                            <input type="file" class="custom-file-input" id="met" name="input_met">
+                            <label class="custom-file-label" for="met">You can upload file with your metric</label>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="row" style="margin-left: 10%; margin-right: 10%;">
+                <a>Upload one file with train and test data:</a>
+                <div class="input-group mb-3">
+                    <div class="custom-file" >
+                        <input type="file" class="custom-file-input" id="in_data" name="in_data">
+                        <label class="custom-file-label" for="in_data"></label>
+                    </div>
+
+                </div>
+            </div>
+
+            <script>
+                $('.custom-file-input').on('change', function() {
+                   let fileName = $(this).val().split('\\').pop();
+                   $(this).next('.custom-file-label').addClass("selected").html(fileName);
+                });
+            </script>
+
+            <div class="custom-control custom-checkbox" style="padding-top: 7px">
+                    <input type="checkbox" class="custom-control-input" id="customCheck2" name="debug_info">
+                    <label class="custom-control-label" for="customCheck2">Show more debug info</label>
+            </div>
+
+            <button type="submit" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="submit">Submit</button>
+
+            {% if result %}
+		    <div class="container-fluid" style="padding: 1% 5% 0 5%">
+
+			    <p align="left" style="margin-bottom: 5px">Output data:</p>
+			    <textarea rows="15" readonly style="width: 100%">{{ result_description }}</textarea>
+
+			</div>
+            {% endif %}
 
         </form>
     </div>
@@ -120,14 +146,5 @@
 </div>
 
 </body>
-<head>
-	<title>Data analyser</title>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
 
-</head>
 </html>
