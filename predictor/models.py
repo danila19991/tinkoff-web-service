@@ -20,7 +20,7 @@ class AlgorithmSettings(models.Model):
     algorithm_settings = models.CharField(max_length=2048,
                                           default=default_string)
     # todo move files to dir models
-    model_file = models.FileField()
+    model_file = models.FileField(upload_to='models/')
     parser_rows = models.IntegerField(default=100)
     parser_proportion = models.FloatField(default=0.7)
     parser_raw_date = models.BooleanField(default=True)

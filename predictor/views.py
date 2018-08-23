@@ -244,4 +244,7 @@ def research_page(request):
         logout(request)
         return HttpResponseRedirect(reverse('predictor:research'))
 
+
+
+
     return render(request, 'predictor/research.html', {})
