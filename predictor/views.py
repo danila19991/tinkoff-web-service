@@ -174,6 +174,7 @@ def restore(request):
             context['incorrect_email'] = True
             return render(request, 'predictor/restore.html', context)
         request.session['may_be_user_email'] = request.POST['email']
+        request.session['confirmed'] = False
 
     if request.method == 'POST' and 'answer_button' in request.POST:
         if 'answer' not in request.POST:
@@ -209,7 +210,8 @@ def restore(request):
         return HttpResponseRedirect(reverse('predictor:auth'))
 
     if 'may_be_user_email' in request.session:
-        if 'confirmed' not in request.session:
+        if 'confirmed' not in request.session or\
+                not request.session['confirmed']:
             users = User.objects.filter(email=
                                         request.session['may_be_user_email'])
             question = AlgorithmSettings.objects.filter(user=
