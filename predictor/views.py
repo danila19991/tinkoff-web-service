@@ -78,6 +78,7 @@ def auth(request):
     :return:
     Authorisation page or redirection to next page.
     """
+    context = {}
     if request.method == 'POST' and 'submit' in request.POST:
         # Checking necessary_fields.
         necessary_fields = ('username', 'password')
@@ -163,10 +164,62 @@ def restore(request):
     :return:
     Restore password page or redirection to authorisation page.
     """
-    if request.method == 'GET' and 'restore' in request.GET:
+    context = {}
+    if request.method == 'POST' and 'email_button' in request.POST:
+        if 'email' not in request.POST:
+            context['no_email'] = True
+            return render(request, 'predictor/restore.html', context)
+        users = User.objects.filter(email=request.POST['email'])
+        if len(users) != 1:
+            context['incorrect_email'] = True
+            return render(request, 'predictor/restore.html', context)
+        request.session['may_be_user_email'] = request.POST['email']
+
+    if request.method == 'POST' and 'answer_button' in request.POST:
+        if 'answer' not in request.POST:
+            context['no_answer'] = True
+            return render(request, 'predictor/restore.html', context)
+        users = User.objects.filter(email=request.session['may_be_user_email'])
+        answer = AlgorithmSettings.objects.filter(user=users[0])[0].answer
+        if answer != request.POST['answer']:
+            context['incorrect_answer'] = True
+            return render(request, 'predictor/restore.html', context)
+        request.session['confirmed'] = True
+
+    if request.method == 'POST' and 'restore_button' in request.POST:
+        necessary_fields = ('password', 'password_double')
+        error_context = check_content(necessary_fields, request.POST)
+        if error_context:
+            for key in error_context.keys():
+                context[key] = error_context[key]
+            return render(request, 'predictor/restore.html', context)
+
+        if request.POST['password'] != request.POST['password_double']:
+            context['not_match_password'] = True
+            return render(request, 'predictor/restore.html', context)
+        users = User.objects.filter(email=request.session['may_be_user_email'])
+        user = users[0]
+        print(user)
+        print(request.POST['password'])
+        user.set_password(request.POST['password'])
+        print(user.check_password(request.POST['password']))
+        user.save()
+        u2 = User.objects.filter(email=request.session['may_be_user_email'])
+        print(u2[0].check_password(request.POST['password']))
         return HttpResponseRedirect(reverse('predictor:auth'))
 
-    return render(request, 'predictor/restore.html', {})
+    if 'may_be_user_email' in request.session:
+        if 'confirmed' not in request.session:
+            users = User.objects.filter(email=
+                                        request.session['may_be_user_email'])
+            question = AlgorithmSettings.objects.filter(user=
+                                                        users[0])[0].question
+            context['secret_question'] = question
+        else:
+            context['confirmed'] = True
+        context['email'] = request.session['may_be_user_email']
+
+    return render(request, 'predictor/restore.html', context)
 
 
 @login_required(login_url='/auth')
