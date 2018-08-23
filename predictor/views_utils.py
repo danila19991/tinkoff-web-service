@@ -21,7 +21,7 @@ def make_prediction(input_data, menu_data, result_data):
 
 
 # todo add security checks for fields
-def check_content(necessary_fields, have_fields):
+def check_content(necessary_fields, have_fields, exist_context={}):
     """
     Function for checking dict on contenting all necessary fields.
 
@@ -31,16 +31,26 @@ def check_content(necessary_fields, have_fields):
     :param have_fields:
     Dict with fields we have.
 
+    :param exist_context:
+    Context which was added in template context before this function.
+
     :return:
     Dict with fields which was missed with 'no_'.
     """
-    missing_context = {}
+    correct = True
 
     for field in necessary_fields:
         if field not in have_fields:
-            missing_context['no_' + field] = True
+            correct = False
+            exist_context['no_' + field] = True
+        else:
+            print(have_fields[field])
+            if type(have_fields[field]) == str and\
+                    len(have_fields[field]) == 0:
+                correct = False
+                exist_context['no_' + field] = True
 
-    return missing_context
+    return correct
 
 
 # todo change to more valid check
