@@ -23,16 +23,64 @@
 		<div class="card-body" align="center" style="margin-left: 10%; margin-right: 10%">
             <p>Restore your password</p>
 
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Email</span>
+            <form method="post">
+                {% csrf_token %}
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Email</span>
+                    </div>
+                    {% if not email %}
+                        <input type="text" name="email" class="form-control" aria-describedby="basic-addon3" placeholder="Enter your email">
+                    {% else %}
+                        <input type="text" name="email" class="form-control" aria-describedby="basic-addon3" value="{{ email }}">
+                    {% endif %}
                 </div>
-                <input type="text" class="form-control" aria-describedby="basic-addon3" placeholder="Enter your email">
-            </div>
 
-            <form>
-                <button type="submit" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="restore">Restore</button>
+
+                <button type="submit" name="email_button" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="continue">Continue</button>
             </form>
+
+
+            {% if secret_question %}
+                <form method="post">
+                    {% csrf_token %}
+                    <p align="left">{{ secret_question }}</p>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Answer</span>
+                        </div>
+                        <input type="text" name="answer" class="form-control" aria-describedby="basic-addon3" placeholder="Enter your answer">
+                    </div>
+                    <button type="submit" name="answer_button" class="btn" style="background-color: #ffdd2d; margin-top: 1%">Continue</button>
+                </form>
+            {% endif %}
+
+            {% if confirmed %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Password</span>
+                        </div>
+                        <input type="password" name="password" class="form-control" aria-describedby="basic-addon3" placeholder="Generate new password">
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Password</span>
+                        </div>
+                        <input type="password" name="password_double" class="form-control" aria-describedby="basic-addon3" placeholder="Enter new password again">
+                    </div>
+                    <button type="submit" name="restore_button" class="btn" style="background-color: #ffdd2d; margin-top: 1%">Restore</button>
+                </form>
+
+            {% endif %}
+
+
+
+
 
 		</div>
     </div>
