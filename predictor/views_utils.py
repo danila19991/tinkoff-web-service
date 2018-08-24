@@ -1,10 +1,24 @@
 from mlalgorithms.shell import Shell
-import re, os
+import re, os, json
+from django.core.files import File
 
 prog = re.compile(r"^[0-9\w\s\.-@]+$")
 
 
 def generate_model(package, algorithm, user_id):
+    '''
+    Function for creating new model source.
+
+    :param package:
+    Name of package.
+
+    :param algorithm:
+    Name of algorithm.
+
+    :param user_id:
+    Unique id for file.
+
+    '''
     if not os.path.exists('models'):
         os.mkdir('models')
     file = open('models/' + str(user_id) + '.py', 'w+')
@@ -40,17 +54,64 @@ class user_model(model.IModel):
 
 def make_train(train_data, alg_settings):
     '''
+    Function for train new model.
 
     :param train_data:
-    :param alg_settings:
+    Data for train
 
+    :param alg_settings:
+    Model of user settings
 
     :return:
-    Str with statistic.
+    Description of resulted model.
     '''
     generate_model(alg_settings.algorithm_package, alg_settings.algorithm_name,
                    alg_settings.user)
-    return 'model_generated'
+    params = {
+        "selected_model": "user_model",
+        "models": [
+            {
+                "model_module_name": "models." + str(alg_settings.user),
+                "model_name": "user_model",
+
+                "model_params": json.loads(alg_settings.algorithm_settings)
+            }
+        ],
+        "selected_parser": "CommonParser",
+        "parsers": [
+            {
+                "parser_module_name": "mlalgorithms.parsers.common_parser",
+                "parser_name": "CommonParser",
+
+                "parser_params": {
+                    "proportion": alg_settings.parser_proportion,
+                    "raw_date": alg_settings.parser_raw_date,
+                    "n_rows": alg_settings.parser_rows
+                }
+            }
+        ],
+        "selected_metric": "f1",
+        "metrics": {
+            "mse": "MeanSquadError",
+            "f1": "MeanF1Score"
+        },
+
+        "debug": alg_settings.with_debug
+    }
+    sh = Shell(existing_parsed_json_dict=params)
+    sh.train(train_data)
+    test_result, quality = sh.test()
+    sh.save_model("models/" + str(alg_settings.user) + ".mdl")
+    new_model = File(open("models/" + str(alg_settings.user) + ".mdl", "rb+"))
+    alg_settings.model_file.delete()
+    alg_settings.model_file = new_model
+    alg_settings.save()
+    new_model.close()
+    if os.path.isfile("models/" + str(alg_settings.user) + ".mdl"):
+        os.remove("models/" + str(alg_settings.user) + ".mdl")
+    if os.path.isfile("models/" + str(alg_settings.user) + ".py"):
+        os.remove("models/" + str(alg_settings.user) + ".py")
+    return f'test_result: {test_result}\nquality: {quality}'
 
 
 # todo set model according to user
@@ -71,7 +132,6 @@ def make_prediction(input_data, menu_data, result_data, model_name):
     Path to model.
     """
 
-    print(model_name)
     sh = Shell(existing_model_name=str(model_name))
     sh.predict(input_data, menu_data)
     sh.output(result_data)

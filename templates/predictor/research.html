@@ -93,7 +93,7 @@
                         <input type="text" name="parser_rows" class="form-control" value="{{ parser_rows }}">
                     </div>
                     <div class="custom-control custom-checkbox" style="padding-top: 7px">
-                        <input type="checkbox" class="custom-control-input" id="customCheck1" name="parser_raw_date">
+                        <input type="checkbox" class="custom-control-input" id="customCheck1" name="parser_raw_date"{% if parser_raw_date %} checked{% endif %}>
                         <label class="custom-control-label" for="customCheck1">pars raw date</label>
                     </div>
 
@@ -120,13 +120,13 @@
             </script>
 
             <div class="custom-control custom-checkbox" style="padding-top: 7px">
-                    <input type="checkbox" class="custom-control-input" id="customCheck2" name="debug_info">
+                    <input type="checkbox" class="custom-control-input" id="customCheck2" name="debug_info" {% if debug_info %} checked{% endif %}>
                     <label class="custom-control-label" for="customCheck2">Show more debug info</label>
             </div>
 
             <button type="submit" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="submit">Submit</button>
 
-            {% if result %}
+            {% if result_description %}
 		    <div class="container-fluid" style="padding: 1% 5% 0 5%">
 
 			    <p align="left" style="margin-bottom: 5px">Output data:</p>

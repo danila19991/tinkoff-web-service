@@ -1,4 +1,4 @@
-import json
+import json, time
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
@@ -128,9 +128,10 @@ def register_page(request):
         long_fields = ('question', 'answer')
         no_error_context = check_content(necessary_fields, request.POST,
                                          context)
-        no_error_context = no_error_context and \
-                           check_content(long_fields, request.POST, context,
-                                         128)
+        no_error_context = no_error_context and check_content(long_fields,
+                                                              request.POST,
+                                                              context,
+                                                              128)
 
         # Check main fields
         if no_error_context:
@@ -157,12 +158,18 @@ def register_page(request):
                                             last_name=
                                             request.POST['last_name'])
 
-            default_model = File(open('models/default.mdl', 'rb+'))
+            while(True):
+                try:
+                    default_model = File(open('models/default.mdl', 'rb+'))
+                    break
+                except Exception:
+                    time.sleep(0.5)
             user_settings = AlgorithmSettings(user=user,
                                               question=
                                               request.POST['question'],
                                               answer=request.POST['answer'],
                                               model_file=default_model)
+            default_model.close()
             user_settings.save()
 
             if 'is_researcher' in request.POST:
@@ -203,6 +210,7 @@ def restore(request):
                 request.session['user_email'] = request.POST['email']
                 request.session['confirmed'] = False
 
+    # Process checking secret answer.
     if request.method == 'POST' and 'answer_button' in request.POST:
         necessary_fields = ('answer',)
         no_error_context = check_content(necessary_fields, request.POST,
@@ -215,6 +223,7 @@ def restore(request):
             else:
                 request.session['confirmed'] = True
 
+    # Process changing email.
     if request.method == 'POST' and 'restore_button' in request.POST:
         necessary_fields = ('password', 'password_double')
         no_error_context = check_content(necessary_fields, request.POST,
@@ -223,9 +232,8 @@ def restore(request):
             if request.POST['password'] != request.POST['password_double']:
                 context['not_match_password'] = True
             else:
-                users = User.objects.filter(email=
-                                            request.session['user_email'])
-                user = users[0]
+                user = User.objects.filter(email=
+                                            request.session['user_email'])[0]
                 user.set_password(request.POST['password'])
                 user.save()
                 return HttpResponseRedirect(reverse('predictor:auth'))
@@ -267,17 +275,19 @@ def research_page(request):
         return HttpResponseRedirect(reverse('predictor:research'))
 
     form_fields = ('algorithm_name', 'algorithm_package', 'algorithm_settings',
-                   'parser_proportion', 'parser_rows')
+                   'parser_proportion', 'parser_rows', 'parser_raw_date',
+                   'debug_info')
     alg_settings = get_object_or_404(AlgorithmSettings, user=request.user)
-    # todo move to extra function
     context['algorithm_name'] = alg_settings.algorithm_name
     context['algorithm_package'] = alg_settings.algorithm_package
     context['algorithm_settings'] = alg_settings.algorithm_settings
     context['parser_proportion'] = alg_settings.parser_proportion
     context['parser_rows'] = alg_settings.parser_rows
+    context['parser_raw_date'] = alg_settings.parser_raw_date
+    context['debug_info'] = alg_settings.with_debug
     if context['parser_rows'] is None:
         context['parser_rows'] = ''
-
+    # Set new params and make new model.
     if request.method == 'POST' and 'submit' in request.POST:
         for field in form_fields:
             if field in request.POST:
@@ -286,6 +296,7 @@ def research_page(request):
                             'parser_proportion')
         no_error_context = check_content(necessary_fields, request.POST,
                                          context)
+        # Check special fields.
         if no_error_context:
             try:
                 tmp = json.loads(request.POST['algorithm_settings'])
@@ -307,7 +318,7 @@ def research_page(request):
                 if len(request.POST['parser_rows']) == 0:
                     alg_settings.parser_rows = None
                 else:
-                    alg_settings.parser_proportion = \
+                    alg_settings.parser_rows = \
                         int(request.POST['parser_rows'])
             except Exception:
                 context['incorrect_parser_rows'] = True
@@ -319,16 +330,21 @@ def research_page(request):
                 alg_settings.parser_raw_date = True
             else:
                 alg_settings.parser_raw_date = False
+            if 'debug_info' in request.POST:
+                alg_settings.with_debug = True
+            else:
+                alg_settings.with_debug = False
             alg_settings.save()
 
             if 'train_data' in request.FILES:
-                request.session['result'] = \
+                request.session['result_description'] = \
                     make_train(request.FILES['train_data'], alg_settings)
 
     for field in form_fields:
         if field in request.session:
             context[field] = request.session[field]
-    if 'result' in request.session:
-        context['result'] = request.session['result']
+    if 'result_description' in request.session and \
+            len(request.session['result_description']):
+        context['result_description'] = request.session['result_description']
     print(context)
     return render(request, 'predictor/research.html', context)
