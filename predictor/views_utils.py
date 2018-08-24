@@ -1,7 +1,7 @@
 from mlalgorithms.shell import Shell
 import re
 
-prog = re.compile(r"^[0-9\w\s\.]+$")
+prog = re.compile(r"^[0-9\w\s\.-]+$")
 
 
 # todo get model from db not train

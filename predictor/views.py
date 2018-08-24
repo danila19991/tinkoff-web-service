@@ -114,9 +114,13 @@ def register_page(request):
     if request.method == 'POST':
         # Check necessary fields.
         necessary_fields = ('first_name', 'last_name', 'email', 'password',
-                            'login', 'question', 'password_double', 'answer')
+                            'login', 'password_double', )
+        long_fields = ('question', 'answer')
         no_error_context = check_content(necessary_fields, request.POST,
                                          context)
+        no_error_context = no_error_context and \
+                           check_content(long_fields, request.POST, context,
+                                         128)
 
         # Check main fields
         if no_error_context:
@@ -185,7 +189,7 @@ def restore(request):
     if request.method == 'POST' and 'answer_button' in request.POST:
         necessary_fields = ('answer',)
         no_error_context = check_content(necessary_fields, request.POST,
-                                         context)
+                                         context, 128)
         if no_error_context:
             users = User.objects.filter(email=request.session['user_email'])
             answer = AlgorithmSettings.objects.filter(user=users[0])[0].answer
