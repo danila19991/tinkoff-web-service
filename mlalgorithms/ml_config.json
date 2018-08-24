@@ -136,7 +136,7 @@
       "parser_params": {
         "proportion": 0.7,
         "raw_date": true,
-        "n_rows": 1000,
+        "n_rows": null,
         "not_parse_data": false
       }
     }
