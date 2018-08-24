@@ -1,4 +1,5 @@
-from django.shortcuts import render
+import json
+from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
@@ -38,7 +39,7 @@ def index(request):
                                 request.FILES['input_menu'], response)
                 request.session['result'] = response.getvalue().decode()
             except Exception:
-                context['invalid_data'] = True
+                context['incorrect_data'] = True
 
     # Processing user logout.
     if request.method == 'POST' and 'logout' in request.POST:
@@ -94,7 +95,7 @@ def auth(request):
                 else:
                     return HttpResponseRedirect(reverse('predictor:index'))
             else:
-                context['wrong_username_or_password'] = True
+                context['incorrect_username_or_password'] = True
 
     return render(request, 'predictor/auth.html', context)
 
@@ -113,25 +114,27 @@ def register_page(request):
     if request.method == 'POST':
         # Check necessary fields.
         necessary_fields = ('first_name', 'last_name', 'email', 'password',
-                            'login', 'question', 'password_double', 'answer')
+                            'login', 'password_double', )
+        long_fields = ('question', 'answer')
         no_error_context = check_content(necessary_fields, request.POST,
                                          context)
+        no_error_context = no_error_context and \
+                           check_content(long_fields, request.POST, context,
+                                         128)
 
         # Check main fields
         if no_error_context:
             if User.objects.filter(username=request.POST['login']):
-                context['another_name'] = True
+                context['incorrect_username'] = True
                 no_error_context = False
-            if User.objects.filter(email=request.POST['email']):
-                context['another_email'] = True
+
+            if not is_email(request.POST['email']) or \
+                    User.objects.filter(email=request.POST['email']):
+                context['incorrect_email'] = True
                 no_error_context = False
 
             if request.POST['password'] != request.POST['password_double']:
                 context['not_match_passwords'] = True
-                no_error_context = False
-
-            if not is_email(request.POST['email']):
-                context['invalid_email'] = True
                 no_error_context = False
 
         if no_error_context:
@@ -186,7 +189,7 @@ def restore(request):
     if request.method == 'POST' and 'answer_button' in request.POST:
         necessary_fields = ('answer',)
         no_error_context = check_content(necessary_fields, request.POST,
-                                         context)
+                                         context, 128)
         if no_error_context:
             users = User.objects.filter(email=request.session['user_email'])
             answer = AlgorithmSettings.objects.filter(user=users[0])[0].answer
@@ -245,5 +248,62 @@ def research_page(request):
     if request.method == 'POST' and 'logout' in request.POST:
         logout(request)
         return HttpResponseRedirect(reverse('predictor:research'))
+
+    form_fields = ('algorithm_name', 'algorithm_package', 'algorithm_settings',
+                   'parser_proportion', 'parser_rows')
+    settings = get_object_or_404(AlgorithmSettings, user=request.user)
+    # todo move to extra function
+    context['algorithm_name'] = settings.algorithm_name
+    context['algorithm_package'] = settings.algorithm_package
+    context['algorithm_settings'] = settings.algorithm_settings
+    context['parser_proportion'] = settings.parser_proportion
+    context['parser_rows'] = settings.parser_rows
+
+    if request.method == 'POST' and 'submit' in request.POST:
+        for field in form_fields:
+            if field in request.POST:
+                request.session[field] = request.POST[field]
+        necessary_fields = ('algorithm_name', 'algorithm_package',
+                            'parser_proportion', 'parser_rows')
+        no_error_context = check_content(necessary_fields, request.POST,
+                                         context)
+        if no_error_context:
+            try:
+                settings.algorithm_settings = \
+                    json.loads(request.POST['algorithm_settings'])
+            except Exception:
+                context['incorrect_algorithm_settings'] = True
+                no_error_context = False
+            try:
+                settings.parser_proportion = \
+                    float(request.POST['parser_proportion'])
+                if settings.parser_proportion <= 0 or\
+                        settings.parser_proportion >= 1:
+                    raise ValueError
+            except Exception:
+                context['incorrect_proportion'] = True
+                no_error_context = False
+            try:
+                if len(request.POST['parser_rows']) == 0:
+                    settings.parser_rows = None
+                else:
+                    settings.parser_proportion = \
+                        int(request.POST['parser_rows'])
+            except Exception:
+                context['incorrect_parser_rows'] = True
+                no_error_context = False
+
+        if no_error_context:
+            settings.algorithm_name = request.POST['algorithm_name']
+            settings.algorithm_package = request.POST['algorithm_package']
+            if 'parser_raw_date' in request.POST:
+                settings.parser_raw_date = True
+            else:
+                settings.parser_raw_date = False
+            settings.save()
+
+    for field in form_fields:
+        if field in request.session:
+            context[field] = request.session[field]
 
     return render(request, 'predictor/research.html', context)

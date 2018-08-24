@@ -1,4 +1,7 @@
 from mlalgorithms.shell import Shell
+import re
+
+prog = re.compile(r"^[0-9\w\s\.-]+$")
 
 
 # todo get model from db not train
@@ -20,8 +23,19 @@ def make_prediction(input_data, menu_data, result_data):
     sh.output(result_data)
 
 
+def is_correct_string(line):
+    if type(line) != str:
+        return False
+    try:
+        line.encode()
+    except Exception:
+        return False
+    return len(line) > 0 and prog.match(line)
+
+
 # todo add security checks for fields
-def check_content(necessary_fields, have_fields, exist_context={}):
+def check_content(necessary_fields, have_fields, exist_context={},
+                  max_len = 32):
     """
     Function for checking dict on contenting all necessary fields.
 
@@ -35,7 +49,7 @@ def check_content(necessary_fields, have_fields, exist_context={}):
     Context which was added in template context before this function.
 
     :return:
-    Dict with fields which was missed with 'no_'.
+    True if all ok False otherwise.
     """
     correct = True
 
@@ -44,11 +58,14 @@ def check_content(necessary_fields, have_fields, exist_context={}):
             correct = False
             exist_context['no_' + field] = True
         else:
-            print(have_fields[field])
-            if type(have_fields[field]) == str and\
-                    len(have_fields[field]) == 0:
-                correct = False
-                exist_context['no_' + field] = True
+            if type(have_fields[field]) == str:
+                    if len(have_fields[field]) == 0:
+                        correct = False
+                        exist_context['no_' + field] = True
+                    if not is_correct_string(have_fields[field]) and \
+                            len(have_fields[field] < max_len):
+                        correct = False
+                        exist_context['incorrect_' + field] = True
 
     return correct
 
