@@ -1,5 +1,5 @@
 {
-  "selected_model": "ExtraTreesModel",
+  "selected_model": "LinearModel",
   "models": [
     {
       "model_module_name": "mlalgorithms.models.linear_model",

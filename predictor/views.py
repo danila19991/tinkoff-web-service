@@ -214,7 +214,7 @@ def restore(request):
         if 'confirmed' not in request.session or\
                 not request.session['confirmed']:
             users = User.objects.filter(email=
-                                        request.session['may_be_user_email'])
+                                        request.session['user_email'])
             question = AlgorithmSettings.objects.filter(user=
                                                         users[0])[0].question
             context['secret_question'] = question

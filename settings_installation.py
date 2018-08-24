@@ -14,8 +14,8 @@ if os.path.isfile('db.sqlite3'):
     os.remove('db.sqlite3')
 
 # Make migrations.
-os.system('manage.py makemigrations predictor')
-os.system('manage.py migrate')
+os.system('python manage.py makemigrations predictor')
+os.system('python manage.py migrate')
 
 sh = Shell()
 sh.train('train.csv')

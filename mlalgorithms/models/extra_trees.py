@@ -19,4 +19,3 @@ class ExtraTreesModel(model.IModel):
             prediction = self.model.predict(np.array(sample).reshape(1, -1))[0]
             predicts.append(prediction)
         return predicts
-

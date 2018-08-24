@@ -29,19 +29,25 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text">Email</span>
                     </div>
-                    {% if not email %}
-                        <input type="text" name="email" class="form-control" aria-describedby="basic-addon3" placeholder="Enter your email">
+                    {% if incorrect_email or no_email %}
+                            <input type="text" name="email" class="form-control" aria-describedby="basic-addon3" style="background-color: #f8d7da" placeholder="Enter your email">
                     {% else %}
-                        <input type="text" name="email" class="form-control" aria-describedby="basic-addon3" value="{{ email }}">
+                        {% if not email %}
+                            <input type="text" name="email" class="form-control" aria-describedby="basic-addon3" placeholder="Enter your email">
+                        {% else %}
+                            <input type="text" name="email" class="form-control" aria-describedby="basic-addon3" value="{{ email }}">
+                        {% endif %}
                     {% endif %}
                 </div>
-
+                {% if incorrect_email or no_email %}
+                <small class="form-text" style="color: #dc3545">Wrong email</small>
+                {% endif %}
 
                 <button type="submit" name="email_button" class="btn" style="background-color: #ffdd2d; margin-top: 1%" name="continue">Continue</button>
             </form>
 
 
-            {% if secret_question %}
+            {% if secret_question and not incorrect_email and not no_email %}
                 <form method="post">
                     {% csrf_token %}
                     <p align="left">{{ secret_question }}</p>
@@ -54,13 +60,29 @@
                     </div>
                     <button type="submit" name="answer_button" class="btn" style="background-color: #ffdd2d; margin-top: 1%">Continue</button>
                 </form>
+            {% else %}
+                {% if incorrect_answer %}
+                    <form method="post">
+                    {% csrf_token %}
+                    <p align="left">{{ secret_question }}</p>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Answer</span>
+                        </div>
+                        <input type="text" name="answer" class="form-control" aria-describedby="basic-addon3" style="background-color: #f8d7da" placeholder="Enter your answer">
+                    </div>
+                    <small class="form-text" style="color: #dc3545">Wrong answer</small>
+
+                    <button type="submit" name="answer_button" class="btn" style="background-color: #ffdd2d; margin-top: 1%">Continue</button>
+                </form>
+                {% endif %}
             {% endif %}
 
             {% if confirmed %}
-
                 <form method="post">
                     {% csrf_token %}
-                    <div class="input-group mb-3">
+                    <div class="input-group mb-3" style="margin-top: 20px">
                         <div class="input-group-prepend">
                             <span class="input-group-text">Password</span>
                         </div>
@@ -75,7 +97,6 @@
                     </div>
                     <button type="submit" name="restore_button" class="btn" style="background-color: #ffdd2d; margin-top: 1%">Restore</button>
                 </form>
-
             {% endif %}
 
 
