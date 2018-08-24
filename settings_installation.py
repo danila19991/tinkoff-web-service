@@ -22,6 +22,12 @@ if os.path.isfile('db.sqlite3'):
 os.system('manage.py makemigrations predictor')
 os.system('manage.py migrate')
 
+# Add models dir
+if not os.path.exists('models'):
+    print('add models storage')
+    os.mkdir('models')
+
+
 sh = Shell()
 sh.train('train.csv')
-sh.save_model('forest_model')
+sh.save_model('models/default.mdl')
