@@ -14,9 +14,9 @@ class ExtraTreesModel(model.IModel):
         self.model.fit(train_samples, train_labels, **kwargs)
 
     def predict(self, samples, **kwargs):
-        predicts = []
+        predictions = []
         for sample in samples:
             prediction = self.model.predict(np.array(sample).reshape(1, -1))[0]
-            predicts.append(prediction)
-        return predicts
+            predictions.append(prediction)
+        return predictions
 

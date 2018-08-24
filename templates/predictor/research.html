@@ -62,55 +62,50 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text">Algorithm's name</span>
                         </div>
-                        <input type="text" name="modelName" class="form-control" placeholder="Enter name of the algorithm">
+                        <input type="text" name="algorithm_name" class="form-control" value="{{ algorithm_name }}">
                     </div>
 
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
-                            <span class="input-group-text">Parser's name</span>
+                            <span class="input-group-text">Algorithm's package</span>
                         </div>
-                        <input type="text" name="parserName" class="form-control" placeholder="Enter name of the parser">
+                        <input type="text" name="algorithm_package" class="form-control" value="{{ algorithm_package }}">
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <div class="form-group">
+                            <label>algorithm settings</label>
+                            <textarea name="algorithm_settings" rows="15" style="width: 100%">{{ algorithm_settings }}</textarea>
+                        </div>
                     </div>
 
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
-                            <span class="input-group-text">Metric's name</span>
+                            <span class="input-group-text">parser_proportion</span>
                         </div>
-                        <input type="text" name="metricName" class="form-control" placeholder="Enter name of the metric">
-                    </div>
-                </div>
-                <div class="col-6" align="left">
-                    <div class="input-group mb-3">
-                        <div class="custom-file" >
-                            <input type="file" class="custom-file-input" id="alg" name="input_alg">
-                            <label class="custom-file-label" for="alg">You can upload file with your algorithm</label>
-                        </div>
+                        <input type="text" name="parser_proportion" class="form-control" value="{{ parser_proportion }}">
                     </div>
 
                     <div class="input-group mb-3">
-                        <div class="custom-file" >
-                            <input type="file" class="custom-file-input" id="par" name="input_par">
-                            <label class="custom-file-label" for="par">You can upload file with your parser</label>
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">parser_rows</span>
                         </div>
+                        <input type="text" name="parser_rows" class="form-control" value="{{ parser_rows }}">
                     </div>
-
-
-                    <div class="input-group mb-3">
-                        <div class="custom-file" >
-                            <input type="file" class="custom-file-input" id="met" name="input_met">
-                            <label class="custom-file-label" for="met">You can upload file with your metric</label>
-                        </div>
+                    <div class="custom-control custom-checkbox" style="padding-top: 7px">
+                        <input type="checkbox" class="custom-control-input" id="customCheck1" name="parser_raw_date">
+                        <label class="custom-control-label" for="customCheck1">pars raw date</label>
                     </div>
-
 
                 </div>
+
             </div>
 
             <div class="row" style="margin-left: 10%; margin-right: 10%;">
                 <a>Upload one file with train and test data:</a>
                 <div class="input-group mb-3">
                     <div class="custom-file" >
-                        <input type="file" class="custom-file-input" id="in_data" name="in_data">
+                        <input type="file" class="custom-file-input" id="in_data" name="train_data">
                         <label class="custom-file-label" for="in_data"></label>
                     </div>
 
