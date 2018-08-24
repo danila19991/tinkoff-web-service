@@ -8,8 +8,8 @@ class AlgorithmSettings(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     algorithm_name = models.CharField(max_length=32,
                                       default='LinearRegression')
-    algorithm_packge = models.CharField(max_length=32,
-                                        default='linear_model')
+    algorithm_package = models.CharField(max_length=32,
+                                         default='linear_model')
 
     default_string = '''{
         "fit_intercept": true,
@@ -21,7 +21,7 @@ class AlgorithmSettings(models.Model):
                                           default=default_string)
     # todo move files to dir models
     model_file = models.FileField(upload_to='models/')
-    parser_rows = models.IntegerField(default=100)
+    parser_rows = models.IntegerField(null=True)
     parser_proportion = models.FloatField(default=0.7)
     parser_raw_date = models.BooleanField(default=True)
     question = models.CharField(max_length=128)

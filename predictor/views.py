@@ -1,4 +1,5 @@
-from django.shortcuts import render
+import json
+from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
@@ -245,5 +246,61 @@ def research_page(request):
     if request.method == 'POST' and 'logout' in request.POST:
         logout(request)
         return HttpResponseRedirect(reverse('predictor:research'))
+
+    form_fields = ('algorithm_name', 'algorithm_package', 'algorithm_settings',
+                   'parser_proportion', 'parser_rows')
+    settings = get_object_or_404(AlgorithmSettings, user=request.user)
+    # todo move to extra function
+    context['algorithm_name'] = settings.algorithm_name
+    context['algorithm_package'] = settings.algorithm_package
+    context['algorithm_settings'] = settings.algorithm_settings
+    context['parser_proportion'] = settings.parser_proportion
+    context['parser_rows'] = settings.parser_rows
+
+    if request.method == 'POST' and 'submit' in request.POST:
+        for field in form_fields:
+            if field in request.POST:
+                request.session[field] = request.POST[field]
+        necessary_fields = form_fields
+        no_error_context = check_content(necessary_fields, request.POST,
+                                         context)
+        if no_error_context:
+            try:
+                settings.algorithm_settings = \
+                    json.loads(request.POST['algorithm_settings'])
+            except Exception:
+                context['json_error'] = True
+                no_error_context = False
+            try:
+                settings.parser_proportion = \
+                    float(request.POST['parser_proportion'])
+                if settings.parser_proportion <= 0 or\
+                        settings.parser_proportion >= 1:
+                    raise ValueError
+            except Exception:
+                context['proportion_error'] = True
+                no_error_context = False
+            try:
+                if len(request.POST['parser_rows']) == 0:
+                    settings.parser_rows = None
+                else:
+                    settings.parser_proportion = \
+                        int(request.POST['parser_rows'])
+            except Exception:
+                context['rows_error'] = True
+                no_error_context = False
+
+        if no_error_context:
+            settings.algorithm_name = request.POST['algorithm_name']
+            settings.algorithm_package = request.POST['algorithm_package']
+            if 'parser_raw_date' in request.POST:
+                settings.parser_raw_date = True
+            else:
+                settings.parser_raw_date = False
+            settings.save()
+
+    for field in form_fields:
+        if field in request.session:
+            context[field] = request.session[field]
 
     return render(request, 'predictor/research.html', context)

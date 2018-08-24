@@ -8,6 +8,11 @@ if os.path.exists('predictor\migrations'):
     print('remove migrations: predictor')
     shutil.rmtree('predictor\migrations')
 
+# Delete models.
+if os.path.exists('models'):
+    print('remove models')
+    shutil.rmtree('models')
+
 # Delete db.
 if os.path.isfile('db.sqlite3'):
     print('remove db: db.sqlite3')
