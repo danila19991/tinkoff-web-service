@@ -42,12 +42,12 @@
 				<div class="form-group">
 					<label for="inputPassword">Password</label>
 					<input type="password" name="password" class="form-control" id="inputPassword" placeholder="Enter password"
-						   {% if no_password or wrong_username_or_password %}
+						   {% if no_password or incorrect_username_or_password %}
 						   style="background-color: #f8d7da"
 						   {% endif %}
 					>
 
-					{% if no_password or wrong_username_or_password %}
+					{% if no_password or incorrect_username_or_password %}
 					<small id="wr_pass" class="form-text" style="color: #dc3545">Wrong password</small>
 					{% endif %}
 

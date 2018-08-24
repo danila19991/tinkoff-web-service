@@ -47,7 +47,7 @@
             </form>
 
 
-            {% if secret_question and not incorrect_email and not no_email %}
+            {% if secret_question and not incorrect_email and not no_email and not incorrect_answer %}
                 <form method="post">
                     {% csrf_token %}
                     <p align="left">{{ secret_question }}</p>
@@ -58,7 +58,7 @@
                         </div>
                         <input type="text" name="answer" class="form-control" aria-describedby="basic-addon3" placeholder="Enter your answer">
                     </div>
-                    <button type="submit" name="answer_button" class="btn" style="background-color: #ffdd2d; margin-top: 1%">Continue</button>
+                    <button type="submit" name="answer_button" class="btn" style="background-color: #ffdd2d; margin-top: 10px">Continue</button>
                 </form>
             {% else %}
                 {% if incorrect_answer %}
@@ -74,34 +74,80 @@
                     </div>
                     <small class="form-text" style="color: #dc3545">Wrong answer</small>
 
-                    <button type="submit" name="answer_button" class="btn" style="background-color: #ffdd2d; margin-top: 1%">Continue</button>
+                    <button type="submit" name="answer_button" class="btn" style="background-color: #ffdd2d; margin-top: 10px">Continue</button>
                 </form>
+
                 {% endif %}
             {% endif %}
 
             {% if confirmed %}
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="input-group mb-3" style="margin-top: 20px">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">Password</span>
+                {% if no_password or no_password_double %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="input-group mb-3" style="margin-top: 2%">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Password</span>
+                            </div>
+                            <input type="password" name="password" class="form-control" aria-describedby="basic-addon3" placeholder="Generate new password">
                         </div>
-                        <input type="password" name="password" class="form-control" aria-describedby="basic-addon3" placeholder="Generate new password">
-                    </div>
 
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">Password</span>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Password</span>
+                            </div>
+                            <input type="password" name="password_double" class="form-control" aria-describedby="basic-addon3" placeholder="Enter new password again">
                         </div>
-                        <input type="password" name="password_double" class="form-control" aria-describedby="basic-addon3" placeholder="Enter new password again">
-                    </div>
-                    <button type="submit" name="restore_button" class="btn" style="background-color: #ffdd2d; margin-top: 1%">Restore</button>
-                </form>
+                        <small class="form-text" style="color: #dc3545">Enter and repeat password</small>
+                        <button type="submit" name="restore_button" class="btn" style="background-color: #ffdd2d; margin-top: 10px">Restore</button>
+
+                    </form>
+
+                {% else %}
+                    {% if not_match_password %}
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="input-group mb-3" style="margin-top: 2%">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Password</span>
+                                </div>
+                                <input type="password" name="password" class="form-control" aria-describedby="basic-addon3" style="background-color: #f8d7da" placeholder="Generate new password">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Password</span>
+                                </div>
+                                <input type="password" name="password_double" class="form-control" aria-describedby="basic-addon3" style="background-color: #f8d7da" placeholder="Enter new password again">
+                            </div>
+                            <small class="form-text" style="color: #dc3545">Passwords not match</small>
+                            <button type="submit" name="restore_button" class="btn" style="background-color: #ffdd2d; margin-top: 10px">Restore</button>
+
+                        </form>
+
+                    {% else %}
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="input-group mb-3" style="margin-top: 2%">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Password</span>
+                                </div>
+                                <input type="password" name="password" class="form-control" aria-describedby="basic-addon3" placeholder="Generate new password">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Password</span>
+                                </div>
+                                <input type="password" name="password_double" class="form-control" aria-describedby="basic-addon3" placeholder="Enter new password again">
+                            </div>
+                            <button type="submit" name="restore_button" class="btn" style="background-color: #ffdd2d; margin-top: 10px">Restore</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+
             {% endif %}
-
-
-
-
 
 		</div>
     </div>

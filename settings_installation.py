@@ -19,6 +19,7 @@ if os.path.isfile('db.sqlite3'):
     os.remove('db.sqlite3')
 
 # Make migrations.
+os.system('md models')
 os.system('python manage.py makemigrations predictor')
 os.system('python manage.py migrate')
 

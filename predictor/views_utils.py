@@ -1,7 +1,7 @@
 from mlalgorithms.shell import Shell
 import re
 
-prog = re.compile(r"^[0-9\w\s\.-]+$")
+prog = re.compile(r"^[-0-9\w\s\.@]+$")
 
 
 # todo get model from db not train
@@ -63,7 +63,7 @@ def check_content(necessary_fields, have_fields, exist_context={},
                         correct = False
                         exist_context['no_' + field] = True
                     if not is_correct_string(have_fields[field]) and \
-                            len(have_fields[field] < max_len):
+                            len(have_fields[field]) < max_len:
                         correct = False
                         exist_context['incorrect_' + field] = True
 

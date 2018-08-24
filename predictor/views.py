@@ -159,7 +159,8 @@ def register_page(request):
                 user.save()
 
             return HttpResponseRedirect(reverse('predictor:auth'))
-    return render(request, 'predictor/register.html', {})
+    print(context)
+    return render(request, 'predictor/register.html', context)
 
 
 def restore(request):
