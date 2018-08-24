@@ -118,9 +118,8 @@ def register_page(request):
         long_fields = ('question', 'answer')
         no_error_context = check_content(necessary_fields, request.POST,
                                          context)
-        no_error_context = no_error_context and \
-                           check_content(long_fields, request.POST, context,
-                                         128)
+        no_error_context = check_content(long_fields, request.POST, context,
+                                         128) and no_error_context
 
         # Check main fields
         if no_error_context:
