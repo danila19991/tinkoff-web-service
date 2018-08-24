@@ -39,7 +39,7 @@ def index(request):
                                 request.FILES['input_menu'], response)
                 request.session['result'] = response.getvalue().decode()
             except Exception:
-                context['invalid_data'] = True
+                context['incorrect_data'] = True
 
     # Processing user logout.
     if request.method == 'POST' and 'logout' in request.POST:
@@ -95,7 +95,7 @@ def auth(request):
                 else:
                     return HttpResponseRedirect(reverse('predictor:index'))
             else:
-                context['wrong_username_or_password'] = True
+                context['incorrect_username_or_password'] = True
 
     return render(request, 'predictor/auth.html', context)
 
@@ -121,18 +121,16 @@ def register_page(request):
         # Check main fields
         if no_error_context:
             if User.objects.filter(username=request.POST['login']):
-                context['another_name'] = True
+                context['incorrect_username'] = True
                 no_error_context = False
-            if User.objects.filter(email=request.POST['email']):
-                context['another_email'] = True
+
+            if not is_email(request.POST['email']) or \
+                    User.objects.filter(email=request.POST['email']):
+                context['incorrect_email'] = True
                 no_error_context = False
 
             if request.POST['password'] != request.POST['password_double']:
                 context['not_match_passwords'] = True
-                no_error_context = False
-
-            if not is_email(request.POST['email']):
-                context['invalid_email'] = True
                 no_error_context = False
 
         if no_error_context:
@@ -261,7 +259,8 @@ def research_page(request):
         for field in form_fields:
             if field in request.POST:
                 request.session[field] = request.POST[field]
-        necessary_fields = form_fields
+        necessary_fields = ('algorithm_name', 'algorithm_package',
+                            'parser_proportion', 'parser_rows')
         no_error_context = check_content(necessary_fields, request.POST,
                                          context)
         if no_error_context:
@@ -269,7 +268,7 @@ def research_page(request):
                 settings.algorithm_settings = \
                     json.loads(request.POST['algorithm_settings'])
             except Exception:
-                context['json_error'] = True
+                context['incorrect_algorithm_settings'] = True
                 no_error_context = False
             try:
                 settings.parser_proportion = \
@@ -278,7 +277,7 @@ def research_page(request):
                         settings.parser_proportion >= 1:
                     raise ValueError
             except Exception:
-                context['proportion_error'] = True
+                context['incorrect_proportion'] = True
                 no_error_context = False
             try:
                 if len(request.POST['parser_rows']) == 0:
@@ -287,7 +286,7 @@ def research_page(request):
                     settings.parser_proportion = \
                         int(request.POST['parser_rows'])
             except Exception:
-                context['rows_error'] = True
+                context['incorrect_parser_rows'] = True
                 no_error_context = False
 
         if no_error_context:
