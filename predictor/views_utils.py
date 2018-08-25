@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate, login, logout
 from mlalgorithms.shell import Shell
 import re, os, json
 from django.core.files import File
@@ -213,3 +214,32 @@ def is_email(email):
         return True
     except ValidationError:
         return False
+
+
+def authorise_user(request, context):
+    '''
+    Function for processing users signing in.
+
+    :param request:
+    Http request for processing.
+
+    :param context:
+    Existing context for page template.
+
+    :return:
+    True if user was authorised.
+    '''
+    necessary_fields = ('username', 'password')
+    no_error_context = check_content(necessary_fields, request.POST,
+                                     context)
+    if no_error_context:
+        # Checking user details.
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return True
+        else:
+            context['incorrect_username_or_password'] = True
+    return False

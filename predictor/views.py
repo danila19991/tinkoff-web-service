@@ -3,8 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
-from predictor.views_utils import make_prediction, check_content, is_email,\
-    make_train
+from predictor.views_utils import *
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
@@ -85,23 +84,11 @@ def auth(request):
     """
     context = {}
     if request.method == 'POST' and 'submit' in request.POST:
-        # Checking necessary_fields.
-        necessary_fields = ('username', 'password')
-        no_error_context = check_content(necessary_fields, request.POST,
-                                         context)
-        if no_error_context:
-            # Checking user details.
-            username = request.POST['username']
-            password = request.POST['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                if 'next' in request.GET:
-                    return HttpResponseRedirect(request.GET['next'])
-                else:
-                    return HttpResponseRedirect(reverse('predictor:index'))
+        if authorise_user(request, context):
+            if 'next' in request.GET:
+                return HttpResponseRedirect(request.GET['next'])
             else:
-                context['incorrect_username_or_password'] = True
+                return HttpResponseRedirect(reverse('predictor:index'))
     logger.info(context)
     return render(request, 'predictor/auth.html', context)
 
