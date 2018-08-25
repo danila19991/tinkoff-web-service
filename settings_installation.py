@@ -29,6 +29,12 @@ if not os.path.exists('models'):
     os.mkdir('models')
 
 
+# Add models dir
+if not os.path.exists('models'):
+    print('add models storage')
+    os.mkdir('models')
+
+
 sh = Shell()
 sh.train('train.csv')
-sh.save_model('forest_model')
+sh.save_model('models/default.mdl')

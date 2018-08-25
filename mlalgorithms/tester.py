@@ -1,7 +1,9 @@
 import abc
 
+import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
 
+from .models import model
 from .parsers.common_parser import CommonParser
 
 
@@ -141,6 +143,19 @@ class MeanF1Score(Metric):
 
     @staticmethod
     def zero_check(conj, arr_len):
+        """
+        Check if goods list is empty.
+
+        :param conj: int
+            Cardinality of conjunction of two sets of goods.
+
+        :param arr_len: int
+            Cardinality of goods list.
+
+        :return: int, float
+            Return 0 if goods list is empty, otherwise division conj and
+            arr_len.
+        """
         if arr_len == 0:
             return 0
         else:
@@ -148,6 +163,18 @@ class MeanF1Score(Metric):
 
     @staticmethod
     def conjunction(lst1, lst2):
+        """
+        Calculate conjunction of two arrays.
+
+        :param lst1: list
+            First array.
+
+        :param lst2: list
+            Second arry.
+
+        :return: int
+            Cardinality of conjunction.
+        """
         it1 = iter(lst1)
         it2 = iter(lst2)
         try:
@@ -185,7 +212,9 @@ class MeanF1Score(Metric):
         :return: float
             A numerical estimate of the accuracy of the algorithm.
         """
-        assert len(validation_label) == len(prediction)
+        assert len(validation_label) == len(prediction), \
+            f"Labels and predictions have different sizes: " \
+            f"{len(validation_label)} != {len(prediction)}"
 
         int_prediction = [int(round(x)) for x in prediction]
 
@@ -213,10 +242,26 @@ class MeanF1Score(Metric):
         :return: float
             A numerical estimate of the accuracy of the algorithm.
         """
-        assert self.conjunction([1, 1, 2, 3, 5], [1, 2, 4, 5]) == 3
+        assert self.conjunction([1, 1, 2, 3, 5], [1, 2, 4, 5]) == 3, \
+            "There are error in conjunction method!"
 
         num_checks = len(validation_labels)
         result = [self.test_check(validation_labels[i],
                                   predictions[i]) for i in range(num_checks)]
         self._cache = sum(result) / num_checks
         return self._cache
+
+
+class TestModel(model.IModel):
+
+    def train(self, train_samples, train_labels, **kwargs):
+        assert len(train_samples) == len(train_labels), \
+            f"Samples and labels have different sizes: " \
+            f"{len(train_samples)} != {len(train_labels)}"
+
+    def predict(self, samples, **kwargs):
+        predictions = []
+        for _, label in zip(samples, kwargs["labels"]):
+            prediction = np.array(label)
+            predictions.append(prediction)
+        return predictions

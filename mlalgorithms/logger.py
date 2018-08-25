@@ -5,8 +5,6 @@ import logging.config
 import time
 
 
-# TODO(Timur): need to write doc for your functions. And you nothing wrote
-#              about parameters of your functions.
 def setup_logging(config_filename="log_config.json"):
     with open(config_filename, "r") as logging_configuration_file:
         config = json.load(logging_configuration_file)
@@ -21,6 +19,12 @@ def decor_exception(func):
     """
     A decorator that wraps the passed in function and logs
     exceptions should one occurred.
+
+    :param func: function
+        Function to decorate.
+
+    :return function
+        Decorated function.
     """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -40,6 +44,12 @@ def decor_exception(func):
 def decor_timer(func):
     """
     A decorator that wraps the passed in function and logs lead time.
+
+    :param func: function
+        Function to decorate.
+
+    :return function
+        Decorated function.
     """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):

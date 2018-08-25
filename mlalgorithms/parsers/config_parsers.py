@@ -1,18 +1,26 @@
+import copy
 import importlib
 import json
 
 
 class ConfigParser:
 
-    def __init__(self, config_filename="ml_config.json"):
+    def __init__(self, existing_parsed_json_dict=None,
+                 config_filename="ml_config.json"):
         """
         Constructor which opens config file and parses it.
+
+        :param existing_parsed_json_dict: dict, optional (default=None)
+            If config file was parsed, you can pass it to this class.
 
         :param config_filename: str, optional(default="ml_config.json")
             Name of the json file with configuration.
         """
-        with open(config_filename, "r") as f:
-            self._parsed_json = json.loads(f.read())
+        if existing_parsed_json_dict is None:
+            with open(config_filename, "r") as f:
+                self._parsed_json = json.loads(f.read())
+        else:
+            self._parsed_json = copy.deepcopy(existing_parsed_json_dict)
 
     def __getitem__(self, item):
         """
