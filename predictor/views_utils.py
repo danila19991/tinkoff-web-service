@@ -2,7 +2,7 @@ from mlalgorithms.shell import Shell
 import re, os, json
 from django.core.files import File
 
-prog = re.compile(r"^[0-9\w\s\.-@]+$")
+prog = re.compile(r"^[-0-9\w\s\.@]+$")
 
 
 def generate_model(package, algorithm, user_id):
