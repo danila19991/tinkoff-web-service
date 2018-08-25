@@ -1,6 +1,6 @@
-from django.test import TestCase, LiveServerTestCase
+from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 
 
 class TestAuthPageSimple(TestCase):
@@ -27,7 +27,7 @@ class TestAuthPageSimple(TestCase):
     def test_empty_fields_send(self):
         fields = ('username', 'password')
 
-        context = {'submit': True}
+        context = {'submit': ''}
 
         for field in fields:
             context[field] = ''
@@ -44,7 +44,7 @@ class TestAuthPageSimple(TestCase):
     def test_incorrect_fields_send(self):
         fields = ('username', 'password')
 
-        context = {'submit': True}
+        context = {'submit': ''}
 
         for field in fields:
             context[field] = 'os.hack_my_system()'
@@ -58,9 +58,26 @@ class TestAuthPageSimple(TestCase):
             self.assertTrue('incorrect_'+field in resp.context)
             self.assertTrue(resp.context['incorrect_'+field])
 
+    def test_big_fields_send(self):
+        fields = ('username', 'password')
+
+        context = {'submit': ''}
+
+        for field in fields:
+            context[field] = 'qwe'*100
+
+        resp = self.client.post(reverse('predictor:auth'), context)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'predictor/auth.html')
+
+        for field in fields:
+            self.assertTrue('incorrect_'+field in resp.context)
+            self.assertTrue(resp.context['incorrect_'+field])
+
     def test_wrong_password(self):
         context = {'username': 'test-user1', 'password': '123466',
-                   'submit': True}
+                   'submit': ''}
 
         resp = self.client.post(reverse('predictor:auth'), context)
 
@@ -72,7 +89,7 @@ class TestAuthPageSimple(TestCase):
 
     def test_wrong_username(self):
         context = {'username': 'test-user2', 'password': '12345',
-                   'submit': True}
+                   'submit': ''}
 
         resp = self.client.post(reverse('predictor:auth'), context)
 
@@ -84,7 +101,7 @@ class TestAuthPageSimple(TestCase):
 
     def test_correct_username_and_password(self):
         context = {'username': 'test-user1', 'password': '12345',
-                   'submit': True}
+                   'submit': ''}
 
         resp = self.client.post(reverse('predictor:auth'), context)
 

@@ -1,16 +1,14 @@
-import json, time, logging
+import json
+from logging import getLogger
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
-from predictor.views_utils import *
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User, Group
-from .models import AlgorithmSettings
-from django.core.files import File
+from django.contrib.auth import logout
+from predictor.views_utils import *
 
-logger = logging.getLogger('django.template')
+logger = getLogger('django.template')
 
 
 @login_required(login_url='/auth')
@@ -106,69 +104,12 @@ def register_page(request):
     context = {}
     form_fields = ('first_name', 'last_name', 'email', 'login', 'question',
                    'answer')
-    if request.method == 'POST':
-        for field in form_fields:
-            if field in request.POST:
-                request.session[field] = request.POST[field]
+    if request.method == 'POST' and register_user(request, context,
+                                                  form_fields):
+        return HttpResponseRedirect(reverse('predictor:auth'))
 
-        # Check necessary fields.
-        necessary_fields = ('first_name', 'last_name', 'email', 'password',
-                            'login', 'password_double', )
-        long_fields = ('question', 'answer')
-        no_error_context = check_content(necessary_fields, request.POST,
-                                         context)
-        no_error_context = check_content(long_fields, request.POST, context,
-                                         128) and no_error_context
+    fill_context(request, context, form_fields)
 
-        # Check main fields
-        if no_error_context:
-            if User.objects.filter(username=request.POST['login']):
-                context['incorrect_username'] = True
-                no_error_context = False
-
-            if not is_email(request.POST['email']) or \
-                    User.objects.filter(email=request.POST['email']):
-                context['incorrect_email'] = True
-                no_error_context = False
-
-            if request.POST['password'] != request.POST['password_double']:
-                context['not_match_passwords'] = True
-                no_error_context = False
-
-        if no_error_context:
-            # Adding user.
-            user = User.objects.create_user(request.POST['login'],
-                                            request.POST['email'],
-                                            request.POST['password'],
-                                            first_name=
-                                            request.POST['first_name'],
-                                            last_name=
-                                            request.POST['last_name'])
-
-            while(True):
-                try:
-                    default_model = File(open('models/default.mdl', 'rb+'))
-                    break
-                except Exception:
-                    time.sleep(0.5)
-            user_settings = AlgorithmSettings(user=user,
-                                              question=
-                                              request.POST['question'],
-                                              answer=request.POST['answer'],
-                                              model_file=default_model)
-            user_settings.save()
-            default_model.close()
-
-            if 'is_researcher' in request.POST:
-                group = Group.objects.get_or_create(name='researcher')
-                user.groups.add(group[0])
-                user.save()
-
-            return HttpResponseRedirect(reverse('predictor:auth'))
-
-    for field in form_fields:
-        if field in request.session:
-            context[field] = request.session[field]
     logger.info(context)
     return render(request, 'predictor/register.html', context)
 
@@ -198,7 +139,8 @@ def restore(request):
                 request.session['confirmed'] = False
 
     # Process checking secret answer.
-    if request.method == 'POST' and 'answer_button' in request.POST:
+    if 'user_email' in request.session and request.method == 'POST' and\
+            'answer_button' in request.POST:
         necessary_fields = ('answer',)
         no_error_context = check_content(necessary_fields, request.POST,
                                          context, 128)
@@ -211,7 +153,8 @@ def restore(request):
                 request.session['confirmed'] = True
 
     # Process changing email.
-    if request.method == 'POST' and 'restore_button' in request.POST:
+    if 'confirmed' in request.session and request.session['confirmed'] and\
+            request.method == 'POST' and 'restore_button' in request.POST:
         necessary_fields = ('password', 'password_double')
         no_error_context = check_content(necessary_fields, request.POST,
                                          context)

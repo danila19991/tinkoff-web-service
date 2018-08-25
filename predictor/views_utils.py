@@ -1,9 +1,14 @@
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login
 from mlalgorithms.shell import Shell
-import re, os, json
+from re import compile
+from os import path, mkdir, remove
+from json import loads
+from time import sleep
 from django.core.files import File
+from django.contrib.auth.models import User, Group
+from .models import AlgorithmSettings
 
-prog = re.compile(r"^[-0-9\w\s\.@]+$")
+prog = compile(r"^[-0-9\w\s\.@]+$")
 
 
 def generate_model(package, algorithm, user_id):
@@ -20,8 +25,8 @@ def generate_model(package, algorithm, user_id):
     Unique id for file.
 
     '''
-    if not os.path.exists('models'):
-        os.mkdir('models')
+    if not path.exists('models'):
+        mkdir('models')
     file = open('models/' + str(user_id) + '.py', 'w+')
     file.write(
 f'''
@@ -75,7 +80,7 @@ def make_train(train_data, alg_settings):
                 "model_module_name": "models." + str(alg_settings.user),
                 "model_name": "user_model",
 
-                "model_params": json.loads(alg_settings.algorithm_settings)
+                "model_params": loads(alg_settings.algorithm_settings)
             }
         ],
         "selected_parser": "CommonParser",
@@ -108,10 +113,10 @@ def make_train(train_data, alg_settings):
     alg_settings.model_file = new_model
     alg_settings.save()
     new_model.close()
-    if os.path.isfile("models/" + str(alg_settings.user) + ".mdl"):
-        os.remove("models/" + str(alg_settings.user) + ".mdl")
-    if os.path.isfile("models/" + str(alg_settings.user) + ".py"):
-        os.remove("models/" + str(alg_settings.user) + ".py")
+    if path.isfile("models/" + str(alg_settings.user) + ".mdl"):
+        remove("models/" + str(alg_settings.user) + ".mdl")
+    if path.isfile("models/" + str(alg_settings.user) + ".py"):
+        remove("models/" + str(alg_settings.user) + ".py")
     return f'test_result: {test_result}\nquality: {quality}'
 
 
@@ -188,8 +193,8 @@ def check_content(necessary_fields, have_fields, exist_context={},
                     if len(have_fields[field]) == 0:
                         correct = False
                         exist_context['no_' + field] = True
-                    if not is_correct_string(have_fields[field]) and \
-                            len(have_fields[field]) < max_len:
+                    if not is_correct_string(have_fields[field]) or \
+                            not len(have_fields[field]) < max_len:
                         correct = False
                         exist_context['incorrect_' + field] = True
 
@@ -243,3 +248,96 @@ def authorise_user(request, context):
         else:
             context['incorrect_username_or_password'] = True
     return False
+
+
+def register_user(request, context, form_fields):
+    '''
+    Function for registration new user in system.
+
+    :param request:
+    Http request for registration.
+
+    :param context:
+    Existing context.
+
+    :param form_fields:
+    Fields for being saved in session.
+
+    :return:
+    True if user was registered, False otherwise.
+    '''
+    for field in form_fields:
+        if field in request.POST:
+            request.session[field] = request.POST[field]
+
+    # Check necessary fields.
+    necessary_fields = ('first_name', 'last_name', 'email', 'password',
+                        'login', 'password_double',)
+    long_fields = ('question', 'answer')
+    no_error_context = check_content(necessary_fields, request.POST, context)
+    no_error_context = check_content(long_fields, request.POST, context, 128)\
+                       and no_error_context
+
+    # Check main fields
+    if no_error_context:
+        if User.objects.filter(username=request.POST['login']):
+            context['incorrect_login'] = True
+            no_error_context = False
+
+        if not is_email(request.POST['email']) or \
+                User.objects.filter(email=request.POST['email']):
+            context['incorrect_email'] = True
+            no_error_context = False
+
+        if request.POST['password'] != request.POST['password_double']:
+            context['not_match_passwords'] = True
+            no_error_context = False
+
+    if not no_error_context:
+        return False
+
+    user = User.objects.create_user(request.POST['login'],
+                                    request.POST['email'],
+                                    request.POST['password'],
+                                    first_name=request.POST['first_name'],
+                                    last_name=request.POST['last_name'])
+
+    # todo check if it need
+    while True:
+        try:
+            default_model = File(open('models/default.mdl', 'rb+'))
+            break
+        except Exception:
+            sleep(0.5)
+    user_settings = AlgorithmSettings(user=user,
+                                      question=request.POST['question'],
+                                      answer=request.POST['answer'],
+                                      model_file=default_model)
+    user_settings.save()
+    default_model.close()
+
+    if 'is_researcher' in request.POST:
+        group = Group.objects.get_or_create(name='researcher')
+        user.groups.add(group[0])
+        user.save()
+
+    return True
+
+
+def fill_context(request, context, form_fields):
+    '''
+    Function for filling context with form_fields with values from session if
+     they in session.
+
+    :param request:
+    Http request with session.
+
+    :param context:
+    Existing form context.
+
+    :param form_fields:
+    Fields for checking.
+    '''
+    for field in form_fields:
+        if field in request.session:
+            context[field] = request.session[field]
