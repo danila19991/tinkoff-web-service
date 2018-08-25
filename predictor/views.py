@@ -81,10 +81,14 @@ def auth(request):
     Authorisation page or redirection to next page.
     """
     context = {}
-    if request.method == 'POST' and 'submit' in request.POST:
-        if authorise_user(request, context):
+
+    if request.user.is_authenticated or (request.method == 'POST' and
+                                         'submit' in request.POST and
+                                         authorise_user(request, context)):
             if 'next' in request.GET:
                 return HttpResponseRedirect(request.GET['next'])
+            elif 'next' in request.POST:
+                return HttpResponseRedirect(request.POST['next'])
             else:
                 return HttpResponseRedirect(reverse('predictor:index'))
     logger.info(context)
@@ -101,6 +105,8 @@ def register_page(request):
     :return:
     Registration page or redirection to authorisation page.
     """
+    request.session.flush()
+
     context = {}
     form_fields = ('first_name', 'last_name', 'email', 'login', 'question',
                    'answer')
@@ -124,6 +130,7 @@ def restore(request):
     :return:
     Restore password page or redirection to authorisation page.
     """
+    request.session.flush()
     context = {}
     # Process sending email
     if request.method == 'POST' and 'email_button' in request.POST:

@@ -43,9 +43,18 @@ class TestAuthPageSimple(TestCase):
         user_settings.save()
         default_model.close()
 
+    @classmethod
+    def tearDownClass(cls):
+        for user in User.objects.all():
+            alg_settings = AlgorithmSettings.objects.get(user=user)
+            alg_settings.model_file.delete()
+            user.delete()
+
     def tearDown(self):
         users = User.objects.filter(username='test-login1')
         if len(users) == 1:
+            alg_settings = AlgorithmSettings.objects.get(user=users[0])
+            alg_settings.model_file.delete()
             users[0].delete()
 
     def test_view_url_exists_at_desired_location(self):
@@ -171,9 +180,10 @@ class TestAuthPageSimple(TestCase):
     def test_correct_registration(self):
         context = correct_user.copy()
 
-        resp = self.client.post(reverse('predictor:register'), context)
+        resp = self.client.post(reverse('predictor:register'), context,
+                                follow=True)
 
-        self.assertRedirects(resp, reverse('predictor:auth'))
+        self.assertRedirects(resp, reverse('predictor:index'))
 
         self.assertEqual(len(User.objects.filter(username='test-login1')), 1)
 

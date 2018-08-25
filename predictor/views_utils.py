@@ -266,6 +266,7 @@ def register_user(request, context, form_fields):
     :return:
     True if user was registered, False otherwise.
     '''
+
     for field in form_fields:
         if field in request.POST:
             request.session[field] = request.POST[field]
@@ -320,6 +321,8 @@ def register_user(request, context, form_fields):
         group = Group.objects.get_or_create(name='researcher')
         user.groups.add(group[0])
         user.save()
+
+    login(request, user)
 
     return True
 

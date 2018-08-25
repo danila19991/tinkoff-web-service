@@ -11,6 +11,11 @@ class TestAuthPageSimple(TestCase):
                                               password='12345')
         test_user1.save()
 
+    @classmethod
+    def tearDownClass(cls):
+        for user in User.objects.all():
+            user.delete()
+
     def test_view_url_exists_at_desired_location(self):
         resp = self.client.get('/auth')
         self.assertEqual(resp.status_code, 200)
