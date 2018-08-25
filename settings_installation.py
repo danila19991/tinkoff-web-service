@@ -23,6 +23,12 @@ os.system('md models')
 os.system('python manage.py makemigrations predictor')
 os.system('python manage.py migrate')
 
+# Add models dir
+if not os.path.exists('models'):
+    print('add models storage')
+    os.mkdir('models')
+
+
 sh = Shell()
 sh.train('train.csv')
 sh.save_model('forest_model')
