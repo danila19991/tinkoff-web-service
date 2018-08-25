@@ -169,8 +169,8 @@ def register_page(request):
                                               request.POST['question'],
                                               answer=request.POST['answer'],
                                               model_file=default_model)
-            default_model.close()
             user_settings.save()
+            default_model.close()
 
             if 'is_researcher' in request.POST:
                 group = Group.objects.get_or_create(name='researcher')
