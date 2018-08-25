@@ -92,6 +92,9 @@ LOGGING = {
         'simple': {
             'format': '%(levelname)s %(message)s'
         },
+        'template': {
+            'format': '%(levelname)s %(lineno)s %(message)s'
+        },
     },
     'filters': {
         'require_debug_true': {
@@ -106,9 +109,14 @@ LOGGING = {
             'stream': 'ext://sys.stdout'
         },
         'file': {
-            "class": "logging.handlers.RotatingFileHandler",
+            "class": "logging.handlers.WatchedFileHandler",
             "formatter": "verbose",
             "filename": "web_app.log",
+        },
+        'template_file': {
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "verbose",
+            "filename": "templates.log",
             "maxBytes": 100000,
             "backupCount": 2
         }
@@ -118,10 +126,6 @@ LOGGING = {
             'handlers': ['file', 'console'],
             'propagate': True,
         },
-        'django.template': {
-            'handlers': ['file', 'console'],
-            'propagate': True,
-        }
     }
 }
 

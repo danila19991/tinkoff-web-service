@@ -130,7 +130,7 @@ def restore(request):
     :return:
     Restore password page or redirection to authorisation page.
     """
-    request.session.flush()
+    #request.session.flush()
     context = {}
     # Process sending email
     if request.method == 'POST' and 'email_button' in request.POST:
@@ -179,7 +179,7 @@ def restore(request):
         if 'confirmed' not in request.session or\
                 not request.session['confirmed']:
             users = User.objects.filter(email=
-                                        request.session['may_be_user_email'])
+                                        request.session['user_email'])
             question = AlgorithmSettings.objects.filter(user=
                                                         users[0])[0].question
             context['secret_question'] = question
