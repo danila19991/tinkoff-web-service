@@ -337,8 +337,11 @@ def research_page(request):
             alg_settings.save()
 
             if 'train_data' in request.FILES:
-                request.session['result_description'] = \
-                    make_train(request.FILES['train_data'], alg_settings)
+                try:
+                    request.session['result_description'] = \
+                        make_train(request.FILES['train_data'], alg_settings)
+                except Exception:
+                    request.session['result_description'] = 'Train failed.'
 
     for field in form_fields:
         if field in request.session:
