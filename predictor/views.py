@@ -1,4 +1,4 @@
-import json, time
+import json, time, logging
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
 from django.http import HttpResponseRedirect, HttpResponse
@@ -10,6 +10,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from .models import AlgorithmSettings
 from django.core.files import File
+
+logger = logging.getLogger('django.template')
 
 
 @login_required(login_url='/auth')
@@ -67,7 +69,7 @@ def index(request):
                 + '...'
         else:
             context['result_description'] = request.session['result']
-
+    logger.info(context)
     return render(request, 'predictor/index.html', context)
 
 
@@ -100,7 +102,7 @@ def auth(request):
                     return HttpResponseRedirect(reverse('predictor:index'))
             else:
                 context['incorrect_username_or_password'] = True
-
+    logger.info(context)
     return render(request, 'predictor/auth.html', context)
 
 
@@ -128,10 +130,8 @@ def register_page(request):
         long_fields = ('question', 'answer')
         no_error_context = check_content(necessary_fields, request.POST,
                                          context)
-        no_error_context = no_error_context and check_content(long_fields,
-                                                              request.POST,
-                                                              context,
-                                                              128)
+        no_error_context = check_content(long_fields, request.POST, context,
+                                         128) and no_error_context
 
         # Check main fields
         if no_error_context:
@@ -182,7 +182,7 @@ def register_page(request):
     for field in form_fields:
         if field in request.session:
             context[field] = request.session[field]
-
+    logger.info(context)
     return render(request, 'predictor/register.html', context)
 
 
@@ -249,7 +249,7 @@ def restore(request):
         else:
             context['confirmed'] = True
         context['email'] = request.session['user_email']
-
+    logger.info(context)
     return render(request, 'predictor/restore.html', context)
 
 
@@ -349,5 +349,5 @@ def research_page(request):
     if 'result_description' in request.session and \
             len(request.session['result_description']):
         context['result_description'] = request.session['result_description']
-    print(context)
+    logger.info(context)
     return render(request, 'predictor/research.html', context)

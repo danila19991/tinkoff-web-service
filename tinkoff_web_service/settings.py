@@ -118,6 +118,10 @@ LOGGING = {
             'handlers': ['file', 'console'],
             'propagate': True,
         },
+        'django.template': {
+            'handlers': ['file', 'console'],
+            'propagate': True,
+        }
     }
 }
 
