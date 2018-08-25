@@ -285,6 +285,7 @@ def research_page(request):
     context['parser_rows'] = alg_settings.parser_rows
     context['parser_raw_date'] = alg_settings.parser_raw_date
     context['debug_info'] = alg_settings.with_debug
+    context['result_description'] = alg_settings.model_results
     if context['parser_rows'] is None:
         context['parser_rows'] = ''
     # Set new params and make new model.
@@ -340,6 +341,9 @@ def research_page(request):
                 try:
                     request.session['result_description'] = \
                         make_train(request.FILES['train_data'], alg_settings)
+                    alg_settings.model_results = \
+                        request.session['result_description']
+                    alg_settings.save()
                 except Exception:
                     request.session['result_description'] = 'Train failed.'
 
