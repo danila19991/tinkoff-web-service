@@ -61,6 +61,10 @@
                                    class="form-control"
                                    {% endif %}
 
+                                   {% if first_name %}
+                                   value="{{ first_name }}"
+                                   {% endif %}
+
                                    aria-describedby="basic-addon3">
                         </div>
                         {% if no_first_name or incorrect_first_name%}
@@ -78,6 +82,9 @@
                                    class="form-control alarm-field"
                                    {% else %}
                                    class="form-control"
+                                   {% endif %}
+                                   {% if login %}
+                                   value="{{ login }}"
                                    {% endif %}
                                    aria-describedby="basic-addon3">
                         </div>
@@ -99,6 +106,9 @@
                                    {% else %}
                                    class="form-control"
                                    {% endif %}
+                                   {% if email %}
+                                   value="{{ email }}"
+                                   {% endif %}
 
                                    aria-describedby="basic-addon3">
                         </div>
@@ -118,6 +128,9 @@
                                    class="form-control alarm-field"
                                    {% else %}
                                    class="form-control"
+                                   {% endif %}
+                                   {% if question %}
+                                   value="{{ question }}"
                                    {% endif %}
 
                                    aria-describedby="basic-addon3">
@@ -142,6 +155,10 @@
                                    class="form-control alarm-field"
                                    {% else %}
                                    class="form-control"
+                                   {% endif %}
+
+                                   {% if last_name %}
+                                   value="{{ last_name }}"
                                    {% endif %}
 
                                    aria-describedby="basic-addon3">
@@ -201,6 +218,9 @@
                                    class="form-control alarm-field"
                                    {% else %}
                                    class="form-control"
+                                   {% endif %}
+                                   {% if answer %}
+                                   value="{{ answer }}"
                                    {% endif %}
                                    aria-describedby="basic-addon3">
                         </div>
