@@ -1,3 +1,4 @@
+import functools
 from django.contrib.auth import authenticate, login
 from mlalgorithms.shell import Shell
 from re import compile
@@ -7,6 +8,8 @@ from time import sleep
 from django.core.files import File
 from django.contrib.auth.models import User, Group
 from .models import AlgorithmSettings
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 prog = compile(r"^[-0-9\w\s\.@]+$")
 
@@ -344,3 +347,28 @@ def fill_context(request, context, form_fields):
     for field in form_fields:
         if field in request.session:
             context[field] = request.session[field]
+
+
+def decor_signed_in_to_next(func):
+    """
+    A decorator that wraps the passed in function and logs lead time.
+
+    :param func: function
+        Function to decorate.
+
+    :return function
+        Decorated function.
+    """
+    @functools.wraps(func)
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if 'next' in request.GET:
+                return HttpResponseRedirect(request.GET['next'])
+            elif 'next' in request.POST:
+                return HttpResponseRedirect(request.POST['next'])
+            else:
+                return HttpResponseRedirect(reverse('predictor:index'))
+
+        result = func(request, *args, **kwargs)
+        return result
+    return wrapper

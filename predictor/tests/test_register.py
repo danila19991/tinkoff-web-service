@@ -232,6 +232,14 @@ class TestAuthPageSimple(TestCase):
             self.assertTrue(field in resp.context)
             self.assertEqual(resp.context[field], context[field])
 
+    def test_redirection_signed_in(self):
+        user = User.objects.get(username='test-login0')
+        self.client.force_login(user=user)
+
+        resp = self.client.get(reverse('predictor:auth'))
+
+        self.assertRedirects(resp, reverse('predictor:index'))
+
 
 
 

@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, LiveServerTestCase
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from unittest import skip
@@ -135,15 +135,49 @@ class TestAuthPageSimple(TestCase):
 
         self.assertRedirects(resp, reverse('predictor:index'))
 
-    # todo fix this test
-    @skip
     def test_redirection_research_researcher(self):
         context = {'username': 'test-user2', 'password': '12345',
                    'submit': ''}
-        print(reverse('predictor:auth') + '?next=/research')
-        resp = self.client.post(reverse('predictor:auth') + '?next=/research',
-                                context, follow=True)
 
-        self.assertRedirects(resp, reverse('predictor:research'))
+        resp = self.client.post(reverse('predictor:auth') + '?next=' +
+                                reverse('predictor:research'), context)
 
-# todo add tests connects to page redirection when user logged in.
+        self.assertRedirects(resp, reverse('predictor:research'),
+                             fetch_redirect_response=False)
+
+    def test_redirection_signed_in(self):
+        user = User.objects.get(username='test-user1')
+        self.client.force_login(user=user)
+
+        resp = self.client.get(reverse('predictor:auth'))
+
+        self.assertRedirects(resp, reverse('predictor:index'))
+
+    def test_redirection_index_signed_in(self):
+        user = User.objects.get(username='test-user1')
+        self.client.force_login(user=user)
+
+        resp = self.client.get(reverse('predictor:auth') + '?next=' +
+                               reverse('predictor:index'))
+
+        self.assertRedirects(resp, reverse('predictor:index'))
+
+    def test_redirection_research_signed_in(self):
+        user = User.objects.get(username='test-user1')
+        self.client.force_login(user=user)
+
+        resp = self.client.get(reverse('predictor:auth') + '?next=' +
+                               reverse('predictor:research'), follow=True)
+
+        self.assertRedirects(resp, reverse('predictor:index'))
+
+    def test_redirection_research_signed_in_researcher(self):
+        user = User.objects.get(username='test-user2')
+        self.client.force_login(user=user)
+
+        resp = self.client.get(reverse('predictor:auth') + '?next=' +
+                               reverse('predictor:research'))
+
+        self.assertRedirects(resp, reverse('predictor:research'),
+                             fetch_redirect_response=False)
+

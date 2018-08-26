@@ -1,3 +1,4 @@
+from predictor.views_utils import *
 import json
 from logging import getLogger
 from django.shortcuts import render, get_object_or_404
@@ -6,7 +7,6 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from predictor.views_utils import *
 
 logger = getLogger('django.template')
 
@@ -70,6 +70,7 @@ def index(request):
     return render(request, 'predictor/index.html', context)
 
 
+@decor_signed_in_to_next
 def auth(request):
     """
     View for authorisation page.
@@ -80,12 +81,12 @@ def auth(request):
     :return:
     Authorisation page or redirection to next page.
     """
+    request.session.flush()
+
     context = {}
 
-    if request.user.is_authenticated or (request.method == 'POST' and
-                                         'submit' in request.POST and
-                                         authorise_user(request, context)):
-
+    if request.method == 'POST' and 'submit' in request.POST and \
+       authorise_user(request, context):
         if 'next' in request.GET:
             return HttpResponseRedirect(request.GET['next'])
         elif 'next' in request.POST:
@@ -96,6 +97,7 @@ def auth(request):
     return render(request, 'predictor/auth.html', context)
 
 
+@decor_signed_in_to_next
 def register_page(request):
     """
     View for registration page. And added registered users.
@@ -106,8 +108,6 @@ def register_page(request):
     :return:
     Registration page or redirection to authorisation page.
     """
-    request.session.flush()
-
     context = {}
     form_fields = ('first_name', 'last_name', 'email', 'login', 'question',
                    'answer')
@@ -121,6 +121,7 @@ def register_page(request):
     return render(request, 'predictor/register.html', context)
 
 
+@decor_signed_in_to_next
 def restore(request):
     """
     View for restore password page.
@@ -131,7 +132,6 @@ def restore(request):
     :return:
     Restore password page or redirection to authorisation page.
     """
-    #request.session.flush()
     context = {}
     # Process sending email
     if request.method == 'POST' and 'email_button' in request.POST:
