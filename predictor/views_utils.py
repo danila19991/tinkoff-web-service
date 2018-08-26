@@ -163,7 +163,7 @@ def is_correct_string(line):
 
 
 def check_content(necessary_fields, have_fields, exist_context={},
-                  max_len = 32):
+                  max_len=32):
     """
     Function for checking dict on contenting all necessary fields.
 
@@ -215,7 +215,7 @@ def is_email(email):
     from django.core.validators import validate_email
     from django.core.exceptions import ValidationError
     try:
-        print(validate_email(email))
+        validate_email(email)
         return True
     except ValidationError:
         return False

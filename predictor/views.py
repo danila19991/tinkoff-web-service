@@ -85,12 +85,13 @@ def auth(request):
     if request.user.is_authenticated or (request.method == 'POST' and
                                          'submit' in request.POST and
                                          authorise_user(request, context)):
-            if 'next' in request.GET:
-                return HttpResponseRedirect(request.GET['next'])
-            elif 'next' in request.POST:
-                return HttpResponseRedirect(request.POST['next'])
-            else:
-                return HttpResponseRedirect(reverse('predictor:index'))
+
+        if 'next' in request.GET:
+            return HttpResponseRedirect(request.GET['next'])
+        elif 'next' in request.POST:
+            return HttpResponseRedirect(request.POST['next'])
+        else:
+            return HttpResponseRedirect(reverse('predictor:index'))
     logger.info(context)
     return render(request, 'predictor/auth.html', context)
 

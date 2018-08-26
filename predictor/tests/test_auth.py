@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
+from unittest import skip
 
 
 class TestAuthPageSimple(TestCase):
@@ -10,6 +11,11 @@ class TestAuthPageSimple(TestCase):
         test_user1 = User.objects.create_user(username='test-user1',
                                               password='12345')
         test_user1.save()
+        test_user2 = User.objects.create_user(username='test-user2',
+                                              password='12345')
+        group = Group.objects.get_or_create(name='researcher')
+        test_user2.groups.add(group[0])
+        test_user2.save()
 
     @classmethod
     def tearDownClass(cls):
@@ -93,7 +99,7 @@ class TestAuthPageSimple(TestCase):
         self.assertTrue(resp.context['incorrect_username_or_password'])
 
     def test_wrong_username(self):
-        context = {'username': 'test-user2', 'password': '12345',
+        context = {'username': 'wrong-username', 'password': '12345',
                    'submit': ''}
 
         resp = self.client.post(reverse('predictor:auth'), context)
@@ -112,4 +118,32 @@ class TestAuthPageSimple(TestCase):
 
         self.assertRedirects(resp, reverse('predictor:index'))
 
-# todo add tests connects to page redirection.
+    def test_redirection_index(self):
+        context = {'username': 'test-user1', 'password': '12345',
+                   'submit': ''}
+
+        resp = self.client.post(reverse('predictor:auth') + '?next=/', context)
+
+        self.assertRedirects(resp, reverse('predictor:index'))
+
+    def test_redirection_research(self):
+        context = {'username': 'test-user1', 'password': '12345',
+                   'submit': ''}
+
+        resp = self.client.post(reverse('predictor:auth') + '?next=/research',
+                                context, follow=True)
+
+        self.assertRedirects(resp, reverse('predictor:index'))
+
+    # todo fix this test
+    @skip
+    def test_redirection_research_researcher(self):
+        context = {'username': 'test-user2', 'password': '12345',
+                   'submit': ''}
+        print(reverse('predictor:auth') + '?next=/research')
+        resp = self.client.post(reverse('predictor:auth') + '?next=/research',
+                                context, follow=True)
+
+        self.assertRedirects(resp, reverse('predictor:research'))
+
+# todo add tests connects to page redirection when user logged in.
