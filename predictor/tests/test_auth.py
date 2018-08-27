@@ -1,7 +1,9 @@
-from django.test import TestCase, LiveServerTestCase
+from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User, Group
-from unittest import skip
+from predictor.models import AlgorithmSettings
+from django.core.files import File
+from time import sleep
 
 
 class TestAuthPageSimple(TestCase):
@@ -15,6 +17,17 @@ class TestAuthPageSimple(TestCase):
                                               password='12345')
         group = Group.objects.get_or_create(name='researcher')
         test_user2.groups.add(group[0])
+        while True:
+            try:
+                default_model = File(open('models/default.mdl', 'rb+'))
+                break
+            except Exception:
+                sleep(0.5)
+        user_settings = AlgorithmSettings(user=test_user2,
+                                          question='Insert qwerty',
+                                          answer='qwerty',
+                                          model_file=default_model)
+        user_settings.save()
         test_user2.save()
 
     @classmethod
@@ -114,7 +127,8 @@ class TestAuthPageSimple(TestCase):
         context = {'username': 'test-user1', 'password': '12345',
                    'submit': ''}
 
-        resp = self.client.post(reverse('predictor:auth'), context)
+        resp = self.client.post(reverse('predictor:auth'), context,
+                                follow=True)
 
         self.assertRedirects(resp, reverse('predictor:index'))
 
@@ -122,7 +136,8 @@ class TestAuthPageSimple(TestCase):
         context = {'username': 'test-user1', 'password': '12345',
                    'submit': ''}
 
-        resp = self.client.post(reverse('predictor:auth') + '?next=/', context)
+        resp = self.client.post(reverse('predictor:auth') + '?next=/', context,
+                                follow=True)
 
         self.assertRedirects(resp, reverse('predictor:index'))
 
@@ -140,10 +155,10 @@ class TestAuthPageSimple(TestCase):
                    'submit': ''}
 
         resp = self.client.post(reverse('predictor:auth') + '?next=' +
-                                reverse('predictor:research'), context)
+                                reverse('predictor:research'), context,
+                                follow=True)
 
-        self.assertRedirects(resp, reverse('predictor:research'),
-                             fetch_redirect_response=False)
+        self.assertRedirects(resp, reverse('predictor:research'))
 
     def test_redirection_signed_in(self):
         user = User.objects.get(username='test-user1')
@@ -158,7 +173,7 @@ class TestAuthPageSimple(TestCase):
         self.client.force_login(user=user)
 
         resp = self.client.get(reverse('predictor:auth') + '?next=' +
-                               reverse('predictor:index'))
+                               reverse('predictor:index'), follow=True)
 
         self.assertRedirects(resp, reverse('predictor:index'))
 
@@ -176,8 +191,7 @@ class TestAuthPageSimple(TestCase):
         self.client.force_login(user=user)
 
         resp = self.client.get(reverse('predictor:auth') + '?next=' +
-                               reverse('predictor:research'))
+                               reverse('predictor:research'), follow=True)
 
-        self.assertRedirects(resp, reverse('predictor:research'),
-                             fetch_redirect_response=False)
+        self.assertRedirects(resp, reverse('predictor:research'))
 
