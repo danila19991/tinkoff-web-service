@@ -9,24 +9,39 @@ from .parsers.common_parser import CommonParser
 
 class Tester:
 
-    def __init__(self, metric_name="MeanF1Score", border=0.5):
+    def __init__(self, metric_name="MeanF1Score", border=0.5,
+                 invert_list=["MeanF1Score"]):
         """
         Initializing object of main class with testing algorithm.
 
-        :param metric_name: str
+        :param metric_name: str, optional (default="MeanF1Score")
             Name of the metric to check quality.
 
-        :param border: float
+        :param border: float, optional (default=0.5)
             The accuracy boundary at which the algorithm is considered to be
             exact.
+
+        :param invert_list: list, optional (default=["MeanF1Score"])
+            List of the metrics name which need to invert comparison with
+            border.
         """
-        self._invert_list = ["MeanF1Score"]
-
         self._metric_name = metric_name
-        class_ = globals()[self._metric_name]
-        self._tester = class_(border)
+        if type(self._metric_name) is not str:
+            raise ValueError(f"metric_name parameter must be str: "
+                             f"got {type(self._metric_name)}")
 
-    def test(self, validation_labels, predictions):
+        class_ = globals()[self._metric_name]
+        self._metric = class_(border)
+        if not isinstance(self._metric, IMetric):
+            raise ValueError(f"Metric is not subclass of IMetric. "
+                             f"Provided type: {type(self._metric)}")
+
+        self._invert_list = invert_list
+        if type(self._invert_list) is not list:
+            raise ValueError(f"invert_list parameter must be list: "
+                             f"got {type(self._invert_list)}")
+
+    def test(self, validation_labels, predictions, **kwargs):
         """
         Main testing function.
 
@@ -36,10 +51,13 @@ class Tester:
         :param validation_labels: array-like, sparse matrix
             Known data.
 
+        :param kwargs: dict
+            Additional arguments for metric test method.
+
         :return: float
             A numerical estimate of the accuracy of the algorithm.
         """
-        return self._tester.test(validation_labels, predictions)
+        return self._metric.test(validation_labels, predictions, **kwargs)
 
     def quality_control(self, validation_labels, predictions):
         """
@@ -55,13 +73,13 @@ class Tester:
             Bool value which define quality of the algorithm.
         """
         invert_comparison = self._metric_name in self._invert_list
-        return self._tester.quality_control(validation_labels, predictions,
+        return self._metric.quality_control(validation_labels, predictions,
                                             invert_comparison)
 
 
-class Metric(abc.ABC):
+class IMetric(abc.ABC):
 
-    def __init__(self, border=0.5):
+    def __init__(self, border):
         """
         Initializing object of testing algorithm's class.
 
@@ -70,10 +88,17 @@ class Metric(abc.ABC):
             exact.
         """
         self._border = border
+        if type(self._border) is not float:
+            raise ValueError(f"border parameter must be float: "
+                             f"got {type(self._border)}.")
+        if not (0.0 <= self._border <= 1.0):
+            raise ValueError(f"border parameter must be in [0.0, 1.0]: "
+                             f"got {self._border}.")
+
         self._cache = None
 
     @abc.abstractmethod
-    def test(self, validation_labels, predictions):
+    def test(self, validation_labels, predictions, **kwargs):
         """
         Main testing function.
 
@@ -82,6 +107,9 @@ class Metric(abc.ABC):
 
         :param validation_labels: array-like, sparse matrix
             Known data.
+
+        :param kwargs: dict
+            Additional arguments for test method.
 
         :return: float
             A numerical estimate of the accuracy of the algorithm.
@@ -113,7 +141,7 @@ class Metric(abc.ABC):
         return self._cache < self._border
 
 
-class MeanSquaredError(Metric):
+class MeanSquaredError(IMetric):
 
     def test(self, validation_labels, predictions, r2=False):
         """
@@ -128,18 +156,38 @@ class MeanSquaredError(Metric):
         :param r2: bool, optional (default=False)
             Flag for additional metric.
 
-        :return: float
-            A numerical estimate of the accuracy of the algorithm.
+        :return: float or tuple (float, float)
+            A numerical estimate of the accuracy of the algorithm. 0.0 is
+            perfect prediction. For r2 score 1.0 is perfect prediction.
         """
         self._cache = mean_squared_error(validation_labels, predictions)
 
-        # Explained variance score (r2_score): 1 is perfect prediction.
         if r2:
             return self._cache, r2_score(validation_labels, predictions)
         return self._cache
 
 
-class MeanF1Score(Metric):
+class MeanF1Score(IMetric):
+
+    @staticmethod
+    def _format_data(validation_label, prediction):
+        """
+        Formatted input data.
+
+        :param validation_label: list
+            Known data.
+
+        :param prediction: list
+            Predicted data.
+
+        :return: tuple (list, list)
+            Return tuple with formatted lists.
+        """
+        int_prediction = [int(round(x)) for x in prediction]
+
+        int_prediction = CommonParser.to_final_label(int_prediction)
+        validation_label = CommonParser.to_final_label(validation_label)
+        return int_prediction, validation_label
 
     @staticmethod
     def zero_check(conj, arr_len):
@@ -164,13 +212,13 @@ class MeanF1Score(Metric):
     @staticmethod
     def conjunction(lst1, lst2):
         """
-        Calculate conjunction of two arrays.
+        Calculate conjunction of two arrays. Arrays must be sorted!
 
         :param lst1: list
-            First array.
+            First sorted array.
 
         :param lst2: list
-            Second arry.
+            Second sorted arry.
 
         :return: int
             Cardinality of conjunction.
@@ -199,37 +247,36 @@ class MeanF1Score(Metric):
 
         return result
 
-    def test_check(self, validation_label, prediction):
+    def test_check(self, validation_label, prediction, need_format=False):
         """
         Main testing function for one list of data.
-
-        :param prediction: list
-            Predicted data.
 
         :param validation_label: list
             Known data.
 
+        :param prediction: list
+            Predicted data.
+
+        :param need_format: bool, optional (default=False)
+            Used to define that data is not formatted.
+
         :return: float
-            A numerical estimate of the accuracy of the algorithm.
+            A numerical estimate of the accuracy of the algorithm. 1.0 is
+            perfect prediction.
         """
-        assert len(validation_label) == len(prediction), \
-            f"Labels and predictions have different sizes: " \
-            f"{len(validation_label)} != {len(prediction)}"
+        if need_format:
+            validation_label, prediction = self._format_data(validation_label,
+                                                             prediction)
 
-        int_prediction = [int(round(x)) for x in prediction]
+        conj = self.conjunction(prediction, validation_label)
 
-        int_prediction = CommonParser.to_final_label(int_prediction)
-        validation_label = CommonParser.to_final_label(validation_label)
-
-        conj = self.conjunction(int_prediction, validation_label)
-
-        p = self.zero_check(conj, len(int_prediction))
+        p = self.zero_check(conj, len(prediction))
         r = self.zero_check(conj, len(validation_label))
         if p == 0 and r == 0:
             return 0
         return 2 * p * r / (p + r)
 
-    def test(self, validation_labels, predictions):
+    def test(self, validation_labels, predictions, need_format=False):
         """
         Main testing function.
 
@@ -239,15 +286,20 @@ class MeanF1Score(Metric):
         :param predictions: list
             List of lists with predicted data.
 
+        :param need_format: bool, optional (default=False)
+            Used to define that data is not formatted.
+
         :return: float
-            A numerical estimate of the accuracy of the algorithm.
+            A numerical estimate of the accuracy of the algorithm. 1.0 is
+            perfect prediction.
         """
         assert self.conjunction([1, 1, 2, 3, 5], [1, 2, 4, 5]) == 3, \
             "There are error in conjunction method!"
 
         num_checks = len(validation_labels)
         result = [self.test_check(validation_labels[i],
-                                  predictions[i]) for i in range(num_checks)]
+                                  predictions[i],
+                                  need_format) for i in range(num_checks)]
         self._cache = sum(result) / num_checks
         return self._cache
 
@@ -255,11 +307,15 @@ class MeanF1Score(Metric):
 class TestModel(model.IModel):
 
     def train(self, train_samples, train_labels, **kwargs):
-        assert len(train_samples) == len(train_labels), \
-            f"Samples and labels have different sizes: " \
-            f"{len(train_samples)} != {len(train_labels)}"
+        if len(train_samples) != len(train_labels):
+            raise ValueError(f"Samples and labels have different sizes: "
+                             f"{len(train_samples)} != {len(train_labels)}")
 
     def predict(self, samples, **kwargs):
+        if len(samples) != len(kwargs["labels"]):
+            raise ValueError(f"Samples and labels have different sizes: "
+                             f"{len(samples)} != {len(kwargs['labels'])}")
+
         predictions = []
         for _, label in zip(samples, kwargs["labels"]):
             prediction = np.array(label)

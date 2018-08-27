@@ -1,12 +1,13 @@
 import abc
+import math
 
 import pandas as pd
-import matplotlib.pyplot as plt
 
 
 class IParser(abc.ABC):
 
-    def clean_data(self, df):
+    @staticmethod
+    def clean_data(df):
         """
         Clean data frame from NaN values.
         Method will be improved when we get dataset.
@@ -19,7 +20,8 @@ class IParser(abc.ABC):
         """
         return df.dropna()
 
-    def to_list(self, df):
+    @staticmethod
+    def to_list(df):
         """
         Convert data frame to list.
 
@@ -31,7 +33,8 @@ class IParser(abc.ABC):
         """
         return df.values.tolist()
 
-    def one_hot_encoding(self, df):
+    @staticmethod
+    def one_hot_encoding(df):
         """
         Convert categorical variable into dummy/indicator variables.
 
@@ -68,6 +71,78 @@ class IParser(abc.ABC):
         if to_list:
             return self.to_list(df)
         return df
+
+    @property
+    @abc.abstractmethod
+    def chknums(self):
+        """
+        Return chknum lists for formatted output.
+
+        :return: list
+            List with chknums.
+        """
+        raise NotImplementedError("Called abstract class method!")
+
+    @property
+    @abc.abstractmethod
+    def most_popular_good_ids(self):
+        """
+        Return most popular good ids calculated during parsing.
+
+        :return: list
+            List with most popular good ids.
+        """
+        raise NotImplementedError("Called abstract class method!")
+
+    @abc.abstractmethod
+    def max_good_id(self):
+        """
+        Calculate max good id for transforming to interim labels.
+
+        :return: int
+            Max good id from parsed data.
+        """
+        raise NotImplementedError("Called abstract class method!")
+
+    @abc.abstractmethod
+    def get_menu_on_day_by_chknum(self, chknum):
+        """
+        Find daily menu by chknum number.
+
+        :param chknum: str
+            Chknum identifier.
+
+        :return: list
+            List with daily menu which contains good ids for day with chknum.
+        """
+        raise NotImplementedError("Called abstract class method!")
+
+    @abc.abstractmethod
+    def to_interim_label(self, label):
+        """
+        Transform label to interim label for model training.
+
+        :param label: float
+            Value to transform.
+
+        :return: float
+            Transformed value.
+        """
+        return math.log(label + 1)
+
+    @staticmethod
+    @abc.abstractmethod
+    def to_final_label(interim_label):
+        """
+        Restore the original value of interim label.
+
+        :param interim_label: float
+            Value to restore.
+
+        :return: float
+            Restored value.
+        """
+        return math.exp(interim_label) - 1
 
     @abc.abstractmethod
     def parse_train_data(self, filepath_or_buffer):
@@ -136,12 +211,3 @@ class IParser(abc.ABC):
             Returns parsed data.
         """
         raise NotImplementedError("Called abstract class method!")
-
-"""
-Example of using parsers:
-    parser = Parser()
-    df = parser.parse("data/food/food.csv", to_list=True)
-    print(df)
-    df.plot(figsize=(15, 10))
-    plt.show()
-"""

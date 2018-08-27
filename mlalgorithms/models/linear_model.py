@@ -1,7 +1,7 @@
 import numpy as np
 
 from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import RidgeCV
+from sklearn.linear_model import Ridge
 
 from . import model
 
@@ -22,8 +22,8 @@ class LinearModel(model.IModel):
         return predictions
 
 
-class RidgeCVModel(LinearModel):
+class RidgeModel(LinearModel):
 
     def __init__(self, **kwargs):
         super().__init__()
-        self.model = RidgeCV(**kwargs)
+        self.model = Ridge(**kwargs)
