@@ -194,4 +194,3 @@ class TestAuthPageSimple(TestCase):
                                reverse('predictor:research'), follow=True)
 
         self.assertRedirects(resp, reverse('predictor:research'))
-

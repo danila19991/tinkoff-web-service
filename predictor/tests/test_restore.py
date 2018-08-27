@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from predictor.models import AlgorithmSettings
 from django.core.files import File
 from time import sleep
+from unittest import skip
+
 
 correct_user = {
     'first_name': 'oleg',
@@ -46,7 +48,6 @@ class TestAuthPageSimple(TestCase):
             alg_settings.model_file.delete()
             user.delete()
 
-
     def test_view_url_exists_at_desired_location(self):
         resp = self.client.get('/restore')
         self.assertEqual(resp.status_code, 200)
@@ -60,3 +61,15 @@ class TestAuthPageSimple(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'predictor/restore.html')
 
+    # TODO(Danila): write tests for checking email field.
+    @skip
+    def test_wrong_email(self):
+        context = {'email': 'oleg@yamdex.ru'}
+
+        resp = self.client.post(reverse('predictor:restore'), context)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'predictor/restore.html')
+
+        self.assertTrue('incorrect_email' in resp.context)
+        self.assertTrue(resp.context['incorrect_email'])

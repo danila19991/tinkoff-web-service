@@ -11,28 +11,28 @@ from .models import AlgorithmSettings
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
-prog = compile(r"^[-0-9\w\s\.@]+$")
+
+prog = compile(r"^[-0-9\w\s.@]+$")
 
 
 def generate_model(package, algorithm, user_id):
-    '''
+    """
     Function for creating new model source.
 
-    :param package:
-    Name of package.
+    :param package: str
+        Name of package.
 
-    :param algorithm:
-    Name of algorithm.
+    :param algorithm: str
+        Name of algorithm.
 
-    :param user_id:
-    Unique id for file.
+    :param user_id: User
+        Unique id for file.
 
-    '''
+    """
     if not path.exists('models'):
         mkdir('models')
     file = open('models/' + str(user_id) + '.py', 'w+')
-    file.write(
-f'''
+    file.write(f'''
 import numpy as np
 
 from sklearn.{package} import {algorithm}
@@ -56,24 +56,23 @@ class user_model(model.IModel):
         return predicts
 
 
-'''
-    )
+''')
     file.close()
 
 
 def make_train(train_data, alg_settings):
-    '''
+    """
     Function for train new model.
 
-    :param train_data:
+    :param train_data: File
     Data for train
 
-    :param alg_settings:
+    :param alg_settings: AlgorithmSettings
     Model of user settings
 
-    :return:
+    :return: str
     Description of resulted model.
-    '''
+    """
     generate_model(alg_settings.algorithm_package, alg_settings.algorithm_name,
                    alg_settings.user)
     params = {
@@ -123,7 +122,6 @@ def make_train(train_data, alg_settings):
     return f'test_result: {test_result}\nquality: {quality}'
 
 
-# todo set model according to user
 def make_prediction(input_data, menu_data, result_data, model_name):
     """
     Function for make prediction on trained model.
@@ -137,7 +135,7 @@ def make_prediction(input_data, menu_data, result_data, model_name):
     :param result_data: File
     Result of prediction in needed format.
 
-    :param model_name:
+    :param model_name: File
     Path to model.
     """
 
@@ -147,15 +145,15 @@ def make_prediction(input_data, menu_data, result_data, model_name):
 
 
 def is_correct_string(line):
-    '''
+    """
     Function for checking correction of string
 
-    :param line:
+    :param line: str
     String for checking.
 
-    :return:
+    :return: Boolean
     True if correct string False otherwise.
-    '''
+    """
     if type(line) != str:
         return False
     try:
@@ -170,19 +168,19 @@ def check_content(necessary_fields, have_fields, exist_context={},
     """
     Function for checking dict on contenting all necessary fields.
 
-    :param necessary_fields:
+    :param necessary_fields: Tuple
     Fields which must contain have_fields.
 
-    :param have_fields:
+    :param have_fields: Dict
     Dict with fields we have.
 
-    :param exist_context:
+    :param exist_context: Dict
     Context which was added in template context before this function.
 
-    :param max_len:
+    :param max_len: Int
     Max len of string in input.
 
-    :return:
+    :return: Boolean
     True if all ok False otherwise.
     """
     correct = True
@@ -204,7 +202,7 @@ def check_content(necessary_fields, have_fields, exist_context={},
     return correct
 
 
-# todo change to more valid check
+# TODO(Danila): change to more valid check
 def is_email(email):
     """
     Function for validation users email.
@@ -212,7 +210,7 @@ def is_email(email):
     :param email: str
     String for checking if it is email.
 
-    :return:
+    :return: Boolean
     True if it is correct email, False otherwise.
     """
     from django.core.validators import validate_email
@@ -225,18 +223,18 @@ def is_email(email):
 
 
 def authorise_user(request, context):
-    '''
+    """
     Function for processing users signing in.
 
-    :param request:
+    :param request: HttpRequest
     Http request for processing.
 
-    :param context:
+    :param context: Dict
     Existing context for page template.
 
-    :return:
+    :return: Boolean
     True if user was authorised.
-    '''
+    """
     necessary_fields = ('username', 'password')
     no_error_context = check_content(necessary_fields, request.POST,
                                      context)
@@ -254,21 +252,21 @@ def authorise_user(request, context):
 
 
 def register_user(request, context, form_fields):
-    '''
+    """
     Function for registration new user in system.
 
-    :param request:
+    :param request: HttpRequest
     Http request for registration.
 
-    :param context:
+    :param context: Dict
     Existing context.
 
-    :param form_fields:
+    :param form_fields: Tuple
     Fields for being saved in session.
 
-    :return:
+    :return: Boolean
     True if user was registered, False otherwise.
-    '''
+    """
 
     for field in form_fields:
         if field in request.POST:
@@ -306,7 +304,7 @@ def register_user(request, context, form_fields):
                                     first_name=request.POST['first_name'],
                                     last_name=request.POST['last_name'])
 
-    # todo check if it need
+    # TODO(Danila): check if it need
     while True:
         try:
             default_model = File(open('models/default.mdl', 'rb+'))
@@ -331,19 +329,19 @@ def register_user(request, context, form_fields):
 
 
 def fill_context(request, context, form_fields):
-    '''
+    """
     Function for filling context with form_fields with values from session if
      they in session.
 
-    :param request:
+    :param request: HttpRequest
     Http request with session.
 
-    :param context:
+    :param context: Dict
     Existing form context.
 
-    :param form_fields:
+    :param form_fields: Tuple
     Fields for checking.
-    '''
+    """
     for field in form_fields:
         if field in request.session:
             context[field] = request.session[field]
@@ -351,7 +349,7 @@ def fill_context(request, context, form_fields):
 
 def decor_signed_in_to_next(func):
     """
-    A decorator that wraps the passed in function and logs lead time.
+    A decorator that checks if session had already authored user.
 
     :param func: function
         Function to decorate.

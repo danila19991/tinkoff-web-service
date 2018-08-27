@@ -16,10 +16,10 @@ def index(request):
     """
     View for main page.
 
-    :param request:
+    :param request: HttpRequest
     Http request.
 
-    :return:
+    :return: instance of HttpResponse
     Prediction page or files with result.
     """
     context = {}
@@ -75,10 +75,10 @@ def auth(request):
     """
     View for authorisation page.
 
-    :param request:
+    :param request: HttpRequest
     Http request.
 
-    :return:
+    :return: instance of HttpResponse
     Authorisation page or redirection to next page.
     """
     request.session.flush()
@@ -102,10 +102,10 @@ def register_page(request):
     """
     View for registration page. And added registered users.
 
-    :param request:
+    :param request: HttpRequest
     Http request.
 
-    :return:
+    :return: instance of HttpResponse
     Registration page or redirection to authorisation page.
     """
     context = {}
@@ -126,10 +126,10 @@ def restore(request):
     """
     View for restore password page.
 
-    :param request:
+    :param request: HttpRequest
     Http request.
 
-    :return:
+    :return: instance of HttpResponse
     Restore password page or redirection to authorisation page.
     """
     context = {}
@@ -196,10 +196,10 @@ def research_page(request):
     """
     View for researcher page.
 
-    :param request:
+    :param request: HttpRequest
     Http request.
 
-    :return:
+    :return: instance of HttpResponse
     Researcher page.
     """
     context = {}

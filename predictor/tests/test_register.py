@@ -239,9 +239,3 @@ class TestAuthPageSimple(TestCase):
         resp = self.client.get(reverse('predictor:auth'))
 
         self.assertRedirects(resp, reverse('predictor:index'))
-
-
-
-
-
-
