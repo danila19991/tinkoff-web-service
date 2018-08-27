@@ -253,7 +253,8 @@ def authorise_user(request, context):
 
 def register_user(request, context, form_fields):
     """
-    Function for registration new user in system.
+    Function for registration new user in system, saving information on
+    registration page and signing in registered user.
 
     :param request: HttpRequest
         Http request for registration.
@@ -276,8 +277,9 @@ def register_user(request, context, form_fields):
     necessary_fields = ('first_name', 'last_name', 'email', 'password',
                         'login', 'password_double',)
     long_fields = ('question', 'answer')
-    no_error_context = check_content(necessary_fields, request.POST, context)
-    no_error_context = check_content(long_fields, request.POST, context, 128)\
+    no_error_context = check_content(necessary_fields, request.POST,
+                                     context)
+    no_error_context = check_content(long_fields, request.POST, context, 128) \
                        and no_error_context
 
     # Check main fields
@@ -298,30 +300,8 @@ def register_user(request, context, form_fields):
     if not no_error_context:
         return False
 
-    user = User.objects.create_user(request.POST['login'],
-                                    request.POST['email'],
-                                    request.POST['password'],
-                                    first_name=request.POST['first_name'],
-                                    last_name=request.POST['last_name'])
-
-    # TODO(Danila): check if it need
-    while True:
-        try:
-            default_model = File(open('models/default.mdl', 'rb+'))
-            break
-        except Exception:
-            sleep(0.5)
-    user_settings = AlgorithmSettings(user=user,
-                                      question=request.POST['question'],
-                                      answer=request.POST['answer'],
-                                      model_file=default_model)
-    user_settings.save()
-    default_model.close()
-
-    if 'is_researcher' in request.POST:
-        group = Group.objects.get_or_create(name='researcher')
-        user.groups.add(group[0])
-        user.save()
+    # Check necessary fields.
+    user = crete_user_with_settings(request.POST)
 
     login(request, user)
 
@@ -337,7 +317,7 @@ def fill_context(request, context, form_fields):
         Http request with session.
 
     :param context: Dict
-        Existing form context.
+        Existing context.
 
     :param form_fields: Tuple
         Fields for checking.
@@ -370,3 +350,131 @@ def decor_signed_in_to_next(func):
         result = func(request, *args, **kwargs)
         return result
     return wrapper
+
+
+def crete_user_with_settings(user_description):
+    """
+    Function for creating user.
+
+    :param user_description: Dict
+        Correct dict with all information for creating user.
+
+    :return: user
+        Instance of new User.
+    """
+    user = User.objects.create_user(user_description['login'],
+                                    user_description['email'],
+                                    user_description['password'],
+                                    first_name=user_description['first_name'],
+                                    last_name=user_description['last_name'])
+
+    # TODO(Danila): check if it need
+    while True:
+        try:
+            default_model = File(open('models/default.mdl', 'rb+'))
+            break
+        except Exception:
+            sleep(0.5)
+    user_settings = AlgorithmSettings(user=user,
+                                      question=user_description['question'],
+                                      answer=user_description['answer'],
+                                      model_file=default_model)
+    user_settings.save()
+    default_model.close()
+
+    if 'is_researcher' in user_description:
+        group = Group.objects.get_or_create(name='researcher')
+        user.groups.add(group[0])
+        user.save()
+
+    return user
+
+
+def restore_search_email(request, context):
+    """
+    Function for checking email in restore page, and setting next step if it is
+    correct.
+
+    :param request: HttpRequest
+        Http request with session.
+
+    :param context: Dict
+        Existing context.
+    """
+    necessary_fields = ('email',)
+    no_error_context = check_content(necessary_fields, request.POST,
+                                     context)
+    if no_error_context:
+        users = User.objects.filter(email=request.POST['email'])
+        if len(users) != 1:
+            context['incorrect_email'] = True
+        else:
+            request.session['user_email'] = request.POST['email']
+            request.session['confirmed'] = False
+
+
+def restore_check_answer(request, context):
+    """
+    Function for checking secret answer in restore page, and setting next step
+    if it is correct.
+
+    :param request: HttpRequest
+        Http request with session.
+
+    :param context: Dict
+        Existing context.
+    """
+    necessary_fields = ('answer',)
+    no_error_context = check_content(necessary_fields, request.POST,
+                                     context, 128)
+    if no_error_context:
+        users = User.objects.get(email=request.session['user_email'])
+        answer = AlgorithmSettings.objects.get(user=users).answer
+        if answer != request.POST['answer']:
+            context['incorrect_answer'] = True
+        else:
+            request.session['confirmed'] = True
+
+
+def restore_change_password(request, context):
+    """
+    Function for checking passwords, and changing user password if they are
+    correct.
+
+    :param request: HttpRequest
+        Http request with session.
+
+    :param context: Dict
+        Existing context.
+
+    :return Boolean
+        True if password was changed, False otherwise.
+    """
+    necessary_fields = ('password', 'password_double')
+    no_error_context = check_content(necessary_fields, request.POST,
+                                     context)
+    if no_error_context:
+        if request.POST['password'] != request.POST['password_double']:
+            context['not_match_password'] = True
+            return False
+        else:
+            user = User.objects.filter(email=
+                                       request.session['user_email'])[0]
+            user.set_password(request.POST['password'])
+            user.save()
+            return True
+    return False
+
+
+def research_fill_data(request, context):
+    if 'user_email' in request.session:
+        if 'confirmed' not in request.session or\
+                not request.session['confirmed']:
+            users = User.objects.filter(email=
+                                        request.session['user_email'])
+            question = AlgorithmSettings.objects.filter(user=
+                                                        users[0])[0].question
+            context['secret_question'] = question
+        else:
+            context['confirmed'] = True
+        context['email'] = request.session['user_email']

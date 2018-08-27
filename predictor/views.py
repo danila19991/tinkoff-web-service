@@ -135,58 +135,21 @@ def restore(request):
     context = {}
     # Process sending email
     if request.method == 'POST' and 'email_button' in request.POST:
-        necessary_fields = ('email', )
-        no_error_context = check_content(necessary_fields, request.POST,
-                                         context)
-        if no_error_context:
-            users = User.objects.filter(email=request.POST['email'])
-            if len(users) != 1:
-                context['incorrect_email'] = True
-            else:
-                request.session['user_email'] = request.POST['email']
-                request.session['confirmed'] = False
+        restore_search_email(request, context)
 
     # Process checking secret answer.
     if 'user_email' in request.session and request.method == 'POST' and\
             'answer_button' in request.POST:
-        necessary_fields = ('answer',)
-        no_error_context = check_content(necessary_fields, request.POST,
-                                         context, 128)
-        if no_error_context:
-            users = User.objects.filter(email=request.session['user_email'])
-            answer = AlgorithmSettings.objects.filter(user=users[0])[0].answer
-            if answer != request.POST['answer']:
-                context['incorrect_answer'] = True
-            else:
-                request.session['confirmed'] = True
+        restore_check_answer(request, context)
 
     # Process changing email.
     if 'confirmed' in request.session and request.session['confirmed'] and\
             request.method == 'POST' and 'restore_button' in request.POST:
-        necessary_fields = ('password', 'password_double')
-        no_error_context = check_content(necessary_fields, request.POST,
-                                         context)
-        if no_error_context:
-            if request.POST['password'] != request.POST['password_double']:
-                context['not_match_password'] = True
-            else:
-                user = User.objects.filter(email=
-                                            request.session['user_email'])[0]
-                user.set_password(request.POST['password'])
-                user.save()
-                return HttpResponseRedirect(reverse('predictor:auth'))
+        if restore_change_password(request, context):
+            return HttpResponseRedirect(reverse('predictor:auth'))
 
-    if 'user_email' in request.session:
-        if 'confirmed' not in request.session or\
-                not request.session['confirmed']:
-            users = User.objects.filter(email=
-                                        request.session['user_email'])
-            question = AlgorithmSettings.objects.filter(user=
-                                                        users[0])[0].question
-            context['secret_question'] = question
-        else:
-            context['confirmed'] = True
-        context['email'] = request.session['user_email']
+    research_fill_data(request, context)
+
     logger.info(context)
     return render(request, 'predictor/restore.html', context)
 
