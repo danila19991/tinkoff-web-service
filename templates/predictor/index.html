@@ -65,8 +65,18 @@
 						<p>Select file with test data:</p>
 						<div class="custom-file">
 							<input type="file" class="custom-file-input" id="data" name="input_data">
-							<label class="custom-file-label" for="data">Choose file</label>
+							<label class="custom-file-label" for="data"
+								   {% if no_input_data %}
+								   style="background-color: #f8d7da"
+								   {% endif %}
+							>Choose file</label>
 						</div>
+
+						{% if no_input_data %}
+						<small class="form-text" style="color: #dc3545">Incorrect file</small>
+						{% endif %}
+
+
 					</div>
 				</div>
 
@@ -75,8 +85,17 @@
 						<p>Select file with menu:</p>
 						<div class="custom-file">
 							<input type="file" class="custom-file-input" id="menu" name="input_menu">
-							<label class="custom-file-label" for="menu">Choose file</label>
+							<label class="custom-file-label" for="menu"
+								   {% if no_input_menu %}
+								   style="background-color: #f8d7da"
+								   {% endif %}
+							>Choose file</label>
 						</div>
+
+						{% if no_input_menu %}
+						<small class="form-text" style="color: #dc3545">Incorrect file</small>
+						{% endif %}
+
 					</div>
 				</div>
 			</div>
@@ -98,6 +117,13 @@
 					Send to analyse!</button>
 				</div>
 			</div>
+
+			{% if no_result %}
+			<div class="alert alert-danger" role="alert" style="padding-top: 5px; padding-bottom: 5px; margin-top: 20px; margin-bottom: 0px; width: 57%;">
+				Prediction failed
+			</div>
+			{% endif %}
+
         </form>
 
             {% if result_description %}

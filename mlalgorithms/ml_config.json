@@ -1,5 +1,5 @@
 {
-  "selected_model": "ExtraTreesModel",
+  "selected_model": "EatMostPopular",
   "models": [
     {
       "model_module_name": "mlalgorithms.models.linear_model",
@@ -124,6 +124,38 @@
         "data_partition": null,
         "metadata": null
       }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.tester",
+      "model_name": "TestModel",
+
+      "model_params": {
+      }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.models.frequency_analysis",
+      "model_name": "EatMostPopular",
+
+      "model_params": {
+      }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.models.frequency_analysis",
+      "model_name": "EatSameAsBefore",
+
+      "model_params": {
+      }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.models.frequency_analysis",
+      "model_name": "EatMostPopularFromOwnOrders",
+
+      "model_params": {
+      }
     }
   ],
 
@@ -136,8 +168,7 @@
       "parser_params": {
         "proportion": 0.7,
         "raw_date": true,
-        "n_rows": 1000,
-        "not_parse_data": false
+        "n_rows": null
       }
     }
   ],
