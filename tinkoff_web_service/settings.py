@@ -20,10 +20,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'c4@-w=1q5$vfm&9abcb5h^=4&q8g5rr$c-cu94+(&+q4=7v(li'
+with open('secret_key.txt', 'r') as f:
+    str_buff = f.read()
+SECRET_KEY = str_buff
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['192.168.1.101', '127.0.0.1']
 
@@ -92,6 +95,9 @@ LOGGING = {
         'simple': {
             'format': '%(levelname)s %(message)s'
         },
+        'template': {
+            'format': '%(levelname)s %(lineno)s %(message)s'
+        },
     },
     'filters': {
         'require_debug_true': {
@@ -106,9 +112,14 @@ LOGGING = {
             'stream': 'ext://sys.stdout'
         },
         'file': {
-            "class": "logging.handlers.RotatingFileHandler",
+            "class": "logging.handlers.WatchedFileHandler",
             "formatter": "verbose",
             "filename": "web_app.log",
+        },
+        'template_file': {
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "verbose",
+            "filename": "templates.log",
             "maxBytes": 100000,
             "backupCount": 2
         }
@@ -118,10 +129,6 @@ LOGGING = {
             'handlers': ['file', 'console'],
             'propagate': True,
         },
-        'django.template': {
-            'handlers': ['file', 'console'],
-            'propagate': True,
-        }
     }
 }
 
