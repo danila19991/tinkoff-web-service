@@ -65,13 +65,13 @@ def make_train(train_data, alg_settings):
     Function for train new model.
 
     :param train_data: File
-    Data for train
+        Data for train
 
     :param alg_settings: AlgorithmSettings
-    Model of user settings
+        Model of user settings
 
     :return: str
-    Description of resulted model.
+        Description of resulted model.
     """
     generate_model(alg_settings.algorithm_package, alg_settings.algorithm_name,
                    alg_settings.user)
@@ -127,16 +127,16 @@ def make_prediction(input_data, menu_data, result_data, model_name):
     Function for make prediction on trained model.
 
     :param input_data: File
-    Test data for getting prediction.
+        Test data for getting prediction.
 
     :param menu_data: File
-    Menu data for prediction.
+        Menu data for prediction.
 
     :param result_data: File
-    Result of prediction in needed format.
+        Result of prediction in needed format.
 
     :param model_name: File
-    Path to model.
+        Path to model.
     """
 
     sh = Shell(existing_model_name=str(model_name))
@@ -149,10 +149,10 @@ def is_correct_string(line):
     Function for checking correction of string
 
     :param line: str
-    String for checking.
+        String for checking.
 
     :return: Boolean
-    True if correct string False otherwise.
+        True if correct string False otherwise.
     """
     if type(line) != str:
         return False
@@ -169,19 +169,19 @@ def check_content(necessary_fields, have_fields, exist_context={},
     Function for checking dict on contenting all necessary fields.
 
     :param necessary_fields: Tuple
-    Fields which must contain have_fields.
+        Fields which must contain have_fields.
 
     :param have_fields: Dict
-    Dict with fields we have.
+        Dict with fields we have.
 
     :param exist_context: Dict
-    Context which was added in template context before this function.
+        Context which was added in template context before this function.
 
     :param max_len: Int
-    Max len of string in input.
+        Max len of string in input.
 
     :return: Boolean
-    True if all ok False otherwise.
+        True if all ok False otherwise.
     """
     correct = True
 
@@ -208,10 +208,10 @@ def is_email(email):
     Function for validation users email.
 
     :param email: str
-    String for checking if it is email.
+        String for checking if it is email.
 
     :return: Boolean
-    True if it is correct email, False otherwise.
+        True if it is correct email, False otherwise.
     """
     from django.core.validators import validate_email
     from django.core.exceptions import ValidationError
@@ -227,13 +227,13 @@ def authorise_user(request, context):
     Function for processing users signing in.
 
     :param request: HttpRequest
-    Http request for processing.
+        Http request for processing.
 
     :param context: Dict
-    Existing context for page template.
+        Existing context for page template.
 
     :return: Boolean
-    True if user was authorised.
+        True if user was authorised.
     """
     necessary_fields = ('username', 'password')
     no_error_context = check_content(necessary_fields, request.POST,
@@ -256,16 +256,16 @@ def register_user(request, context, form_fields):
     Function for registration new user in system.
 
     :param request: HttpRequest
-    Http request for registration.
+        Http request for registration.
 
     :param context: Dict
-    Existing context.
+        Existing context.
 
     :param form_fields: Tuple
-    Fields for being saved in session.
+        Fields for being saved in session.
 
     :return: Boolean
-    True if user was registered, False otherwise.
+        True if user was registered, False otherwise.
     """
 
     for field in form_fields:
@@ -334,13 +334,13 @@ def fill_context(request, context, form_fields):
      they in session.
 
     :param request: HttpRequest
-    Http request with session.
+        Http request with session.
 
     :param context: Dict
-    Existing form context.
+        Existing form context.
 
     :param form_fields: Tuple
-    Fields for checking.
+        Fields for checking.
     """
     for field in form_fields:
         if field in request.session:
