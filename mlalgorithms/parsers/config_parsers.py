@@ -17,9 +17,17 @@ class ConfigParser:
             Name of the json file with configuration.
         """
         if existing_parsed_json_dict is None:
+            if type(config_filename) is not str:
+                raise ValueError(f"config_filename parameter must be str: "
+                                 f"got {type(config_filename)}")
+
             with open(config_filename, "r") as f:
                 self._parsed_json = json.loads(f.read())
         else:
+            if type(existing_parsed_json_dict) is not dict:
+                raise ValueError(f"existing_parsed_json_dict parameter must "
+                                 f"be dict: got "
+                                 f"{type(existing_parsed_json_dict)}")
             self._parsed_json = copy.deepcopy(existing_parsed_json_dict)
 
     def __getitem__(self, item):
@@ -104,9 +112,11 @@ class ConfigParser:
         class_name = self[f"selected_{label}"]
         internal_dict = self.get_internal_params(f"{label}s", class_name)
 
-        return {"class_name": class_name,
-                "module_name": internal_dict[f"{label}_module_name"],
-                "params": internal_dict[f"{label}_params"]}
+        return {
+            "class_name": class_name,
+            "module_name": internal_dict[f"{label}_module_name"],
+            "params": internal_dict[f"{label}_params"]
+        }
 
     def get_metric(self):
         """
@@ -117,3 +127,12 @@ class ConfigParser:
         """
         metric_name = self["selected_metric"]
         return self["metrics"][metric_name]
+
+    def get_tester_params(self):
+        """
+        Get parameters from config for tester class.
+
+        :return: dict
+            Extract parameters from parsed json config.
+        """
+        return self["tester_params"][0]
