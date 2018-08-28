@@ -3,7 +3,6 @@ from django.test import TestCase
 from django.urls import reverse
 from predictor.models import AlgorithmSettings
 from predictor.views_utils import crete_user_with_settings
-from unittest import skip
 
 
 correct_user = {

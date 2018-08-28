@@ -3,16 +3,77 @@ import functools
 import logging
 import logging.config
 import time
+import types
 
 
-def setup_logging(config_filename="log_config.json"):
-    with open(config_filename, "r") as logging_configuration_file:
-        config = json.load(logging_configuration_file)
-    logging.config.dictConfig(config)
+def _log_newline(self, how_many_lines=1):
+    """
+    Add option to log blank new line at Streams.
+
+    :param self: logging.Logger
+        Instance of Logger object.
+
+    :param how_many_lines: int
+        Define how many lines Logger should write.
+    """
+    # Switch handler, output a blank line.
+    self.addHandler(self.blank_handler_console)
+    self.addHandler(self.blank_handler_file)
+    self.removeHandler(self.console_handler)
+    self.removeHandler(self.file_handler)
+
+    for i in range(how_many_lines):
+        self.info("")
+
+    # Switch back.
+    self.removeHandler(self.blank_handler_console)
+    self.removeHandler(self.blank_handler_file)
+    self.addHandler(self.console_handler)
+    self.addHandler(self.file_handler)
+
+
+def _configure_logger():
+    """
+    Add to logger attributes handlers and add method for Logger object.
+    """
+    logger = get_logger()
+
+    # Save some data and add a method to logger object.
+    logger.console_handler = logger.handlers[0]
+    logger.blank_handler_console = logger.handlers[1]
+    logger.file_handler = logger.handlers[2]
+    logger.blank_handler_file = logger.handlers[3]
+    logger.newline = types.MethodType(_log_newline, logger)
+
+    logger.removeHandler(logger.blank_handler_console)
+    logger.removeHandler(logger.blank_handler_file)
 
 
 def get_logger():
-    return logging.getLogger('mlalgorithms')
+    """
+    Get current logger for library.
+
+    :return: logging.Logger
+        Reference to library logger.
+    """
+    return logging.getLogger("mlalgorithms")
+
+
+def setup_logging(config_filename="log_config.json"):
+    """
+    Setup logging for the library.
+
+    :param config_filename: str
+        File name of the logger config.
+    """
+    with open(config_filename, "r") as logging_configuration_file:
+        config = json.load(logging_configuration_file)
+    logging.config.dictConfig(config)
+    _configure_logger()
+
+    # ATTENTION! Do not see at warning on next code line, in _configure_logger
+    # method we add newline method for Logger instance.
+    get_logger().newline()
 
 
 def decor_exception(func):
@@ -63,6 +124,12 @@ def decor_timer(func):
 
 
 def decor_class_logging_error_and_time():
+    """
+    Decorate all methods in class.
+
+    :return: function
+        Class with decorated methods.
+    """
     def decorate(cls):
         for attr in cls.__dict__:
             if callable(getattr(cls, attr)):

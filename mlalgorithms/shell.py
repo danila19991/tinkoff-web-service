@@ -28,7 +28,7 @@ class Shell:
     def __init__(self, existing_model_name=None,
                  existing_parsed_json_dict=None):
         """
-        Constructor which initialize class fields.
+        Constructor which initializes class fields.
 
         :param existing_model_name: str, optional (default=None)
             Name of the existing model file.
@@ -217,9 +217,19 @@ class Shell:
         """
         Make predictions on input dataset.
 
-        :param filepath_or_buffer_set: same as train filepath_or_buffer.
+        :param filepath_or_buffer_set: str, pathlib.Path,
+            py._path.local.LocalPath or any object with a read() method
+            (such as a file handle or StringIO)
+            The string could be a URL. Valid URL schemes include http, ftp, s3,
+            and file. For file URLs, a host is expected. For instance, a local
+            file could be file://localhost/path/to/table.csv.
 
-        :param filepath_or_buffer_menu: same as train filepath_or_buffer.
+        :param filepath_or_buffer_menu: str, pathlib.Path,
+            py._path.local.LocalPath or any object with a read() method
+            (such as a file handle or StringIO)
+            The string could be a URL. Valid URL schemes include http, ftp, s3,
+            and file. For file URLs, a host is expected. For instance, a local
+            file could be file://localhost/path/to/table.csv.
         """
         self._parser.parse_test_data(filepath_or_buffer_set,
                                      filepath_or_buffer_menu)
@@ -231,7 +241,7 @@ class Shell:
         """
         Test prediction quality of algorithm.
 
-        :return tuple (float, float), tuple (None, None)
+        :return: tuple (float, float) or tuple (None, None)
             Pair of two values from tester class. Or None if nothing to test.
         """
         if self._predictions is None:

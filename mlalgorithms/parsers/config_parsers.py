@@ -76,28 +76,28 @@ class ConfigParser:
         """
         return self.get_class(class_name, module_name)(**kwargs)
 
-    def get_internal_params(self, list_name, internal_label=None):
+    def get_internal_params(self, dict_name, internal_label=None):
         """
         Get internal dict based on name (and internal label).
 
-        :param list_name: str
-            Name of the global list in config file.
+        :param dict_name: str
+            Name of the global dict in config file.
 
         :param internal_label: str, optional (default=None)
-            Name of the internal field in the global list with dicts.
+            Name of the internal field in the global dict with dicts.
 
         :return: list, dict
-            If label is not passed return lit with dicts otherwise return
+            If label is not passed return dict with dicts otherwise return
             internal dict with label.
         """
-        global_list_with_dicts = self[list_name]
+        global_dict_with_dicts = self[dict_name]
         if internal_label is None:
-            return global_list_with_dicts
+            return global_dict_with_dicts
 
-        for internal_dict in global_list_with_dicts:
-            if internal_label in internal_dict.values():
-                return internal_dict
-        raise KeyError(f"Not found key {internal_label} in {list_name}!")
+        for internal_dict_name in global_dict_with_dicts.keys():
+            if internal_label == internal_dict_name:
+                return global_dict_with_dicts[internal_dict_name]
+        raise KeyError(f"Not found key {internal_label} in {dict_name}!")
 
     def get_params_for(self, label):
         """
@@ -135,4 +135,4 @@ class ConfigParser:
         :return: dict
             Extract parameters from parsed json config.
         """
-        return self["tester_params"][0]
+        return self["tester_params"]

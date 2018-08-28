@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 from predictor.views_utils import crete_user_with_settings
+from predictor.models import AlgorithmSettings
 
 
 correct_user = {
@@ -31,6 +32,8 @@ class TestAuthPageSimple(TestCase):
     @classmethod
     def tearDownClass(cls):
         for user in User.objects.all():
+            alg_settings = AlgorithmSettings.objects.get(user=user)
+            alg_settings.model_file.delete()
             user.delete()
 
     def test_view_url_exists_at_desired_location(self):
