@@ -69,7 +69,7 @@
 								   {% if no_input_data %}
 								   style="background-color: #f8d7da"
 								   {% endif %}
-							>Choose file</label>
+							align="left">Choose file</label>
 						</div>
 
 						{% if no_input_data %}
@@ -89,7 +89,7 @@
 								   {% if no_input_menu %}
 								   style="background-color: #f8d7da"
 								   {% endif %}
-							>Choose file</label>
+							align="left">Choose file</label>
 						</div>
 
 						{% if no_input_menu %}
@@ -128,9 +128,9 @@
 				</div>
 			</div>
 
-			{% if no_result %}
+			{% if incorrect_data %}
 			<div class="alert alert-danger" role="alert" style="padding-top: 5px; padding-bottom: 5px; margin-top: 20px; margin-bottom: 0px; width: 57%;">
-				Prediction failed
+				Prediction failed: incorrect data
 			</div>
 			{% endif %}
 
