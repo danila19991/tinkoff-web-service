@@ -1,5 +1,5 @@
 {
-  "selected_model": "EatMostPopular",
+  "selected_model": "MostPopularFromOwnOrders",
   "models": [
     {
       "model_module_name": "mlalgorithms.models.linear_model",
@@ -10,6 +10,22 @@
         "normalize": false,
         "copy_X": true,
         "n_jobs": 1
+      }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.models.linear_model",
+      "model_name": "RidgeModel",
+
+      "model_params": {
+        "alpha": 1.0,
+        "fit_intercept": true,
+        "normalize": false,
+        "copy_X": true,
+        "max_iter": null,
+        "tol": 0.001,
+        "solver": "auto",
+        "random_state": null
       }
     },
 
@@ -30,7 +46,31 @@
     },
 
     {
-      "model_module_name": "mlalgorithms.models.extra_trees",
+      "model_module_name": "mlalgorithms.models.ensemble_models",
+      "model_name": "RandomForestModel",
+
+      "model_params": {
+        "n_estimators": 10,
+        "criterion": "mse",
+        "max_depth": null,
+        "min_samples_split": 2,
+        "min_samples_leaf": 1,
+        "min_weight_fraction_leaf": 0.0,
+        "max_features": "auto",
+        "max_leaf_nodes": null,
+        "min_impurity_decrease": 0.0,
+        "min_impurity_split": null,
+        "bootstrap": true,
+        "oob_score": false,
+        "n_jobs": 1,
+        "random_state": null,
+        "verbose": 1,
+        "warm_start": false
+      }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.models.ensemble_models",
       "model_name": "ExtraTreesModel",
 
       "model_params": {
@@ -47,8 +87,74 @@
         "oob_score": false,
         "n_jobs": 1,
         "random_state": null,
-        "verbose": 0,
+        "verbose": 1,
         "warm_start": false
+      }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.models.ensemble_models",
+      "model_name": "GradientBoostingModel",
+
+      "model_params": {
+        "loss": "quantile",
+        "learning_rate": 0.01,
+        "n_estimators": 20,
+        "subsample": 1.0,
+        "criterion": "friedman_mse",
+        "min_samples_split": 2,
+        "min_samples_leaf": 1,
+        "min_weight_fraction_leaf": 0.0,
+        "max_depth": 3,
+        "min_impurity_decrease": 1.0,
+        "min_impurity_split": null,
+        "init": null,
+        "random_state": null,
+        "max_features": null,
+        "alpha": 0.805,
+        "verbose": 0,
+        "max_leaf_nodes": null,
+        "warm_start": false,
+        "presort": "auto"
+      }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.models.tree_models",
+      "model_name": "DecisionTreeModel",
+
+      "model_params": {
+        "criterion": "mse",
+        "splitter": "best",
+        "max_depth": null,
+        "min_samples_split": 2,
+        "min_samples_leaf": 1,
+        "min_weight_fraction_leaf": 0.0,
+        "max_features": null,
+        "random_state": null,
+        "max_leaf_nodes": null,
+        "min_impurity_decrease": 0.0,
+        "min_impurity_split": null,
+        "presort": false
+      }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.models.tree_models",
+      "model_name": "ExtraTreeModel",
+
+      "model_params": {
+        "criterion": "mse",
+        "splitter": "random",
+        "max_depth": null,
+        "min_samples_split": 2,
+        "min_samples_leaf": 1,
+        "min_weight_fraction_leaf": 0.0,
+        "max_features": "auto",
+        "random_state": null,
+        "min_impurity_decrease": 0.0,
+        "min_impurity_split": null,
+        "max_leaf_nodes": null
       }
     },
 
@@ -57,7 +163,7 @@
       "model_name": "CatBoostModel",
 
       "model_params": {
-        "iterations": null,
+        "iterations": 100,
         "learning_rate": null,
         "depth": null,
         "l2_leaf_reg": null,
@@ -78,13 +184,13 @@
         "random_seed": null,
         "use_best_model": null,
         "verbose": null,
-        "logging_level": null,
+        "logging_level": "Verbose",
         "metric_period": null,
         "ctr_leaf_count_limit": null,
         "store_all_simple_ctr": null,
         "max_ctr_complexity": null,
         "has_time": null,
-        "allow_const_label": null,
+        "allow_const_label": true,
         "one_hot_max_size": null,
         "random_strength": null,
         "name": null,
@@ -136,25 +242,47 @@
 
     {
       "model_module_name": "mlalgorithms.models.frequency_analysis",
-      "model_name": "EatMostPopular",
+      "model_name": "MostPopular",
 
       "model_params": {
+        "num_popular_ids": 5
       }
     },
 
     {
       "model_module_name": "mlalgorithms.models.frequency_analysis",
-      "model_name": "EatSameAsBefore",
+      "model_name": "SameAsBefore",
 
       "model_params": {
+        "num_popular_ids": 5
       }
     },
 
     {
       "model_module_name": "mlalgorithms.models.frequency_analysis",
-      "model_name": "EatMostPopularFromOwnOrders",
+      "model_name": "MostPopularFromOwnOrders",
 
       "model_params": {
+        "num_popular_ids": 5
+      }
+    },
+
+    {
+      "model_module_name": "mlalgorithms.models.clustering_model",
+      "model_name": "ClusteringModel",
+
+      "model_params": {
+        "n_clusters": 3,
+        "init": "k-means++",
+        "n_init": 10,
+        "max_iter": 300,
+        "tol": 0.0001,
+        "precompute_distances": "auto",
+        "verbose": 0,
+        "random_state": 1,
+        "copy_x": true,
+        "n_jobs": 1,
+        "algorithm": "auto"
       }
     }
   ],
@@ -168,14 +296,24 @@
       "parser_params": {
         "proportion": 0.7,
         "raw_date": true,
-        "n_rows": null
+        "n_rows": null,
+        "num_popular_ids": 5
       }
     }
   ],
 
   "selected_metric": "f1",
+  "tester_params": [
+    {
+      "border": 0.5,
+      "invert_list": [
+        "MeanF1Score"
+      ]
+    }
+  ],
+
   "metrics": {
-    "mse": "MeanSquadError",
+    "mse": "MeanSquaredError",
     "f1": "MeanF1Score"
   },
 

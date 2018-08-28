@@ -25,11 +25,12 @@ setup_logging(log_config_path)
 @decor_class_logging_error_and_time()
 class Shell:
 
-    def __init__(self, existing_model_name="", existing_parsed_json_dict=None):
+    def __init__(self, existing_model_name=None,
+                 existing_parsed_json_dict=None):
         """
         Constructor which initialize class fields.
 
-        :param existing_model_name: str, optional (default="")
+        :param existing_model_name: str, optional (default=None)
             Name of the existing model file.
 
         :param existing_parsed_json_dict: dict, optional (default=None)
@@ -40,13 +41,14 @@ class Shell:
         self._config_parser = ConfigParser(existing_parsed_json_dict,
                                            ml_config_path)
         self._tester = Tester(
-            self._config_parser.get_metric()
+            self._config_parser.get_metric(),
+            **self._config_parser.get_tester_params()
         )
 
         self._model_parameters = self._config_parser.get_params_for("model")
         self._parser_parameters = self._config_parser.get_params_for("parser")
 
-        if not existing_model_name:
+        if existing_model_name is None:
             self._model = self._config_parser.get_instance(
                 self._model_parameters["class_name"],
                 self._model_parameters["module_name"],
@@ -64,9 +66,8 @@ class Shell:
 
         # ATTENTION: pickle dumps is not equal to created model and parser
         # classes.
-        if not existing_model_name:
-            assert self._check_interfaces(), \
-                "Model or parser is not subclass of IModel or IParser."
+        if existing_model_name is None:
+            self._check_interfaces()
 
     @property
     def predictions(self):
@@ -78,47 +79,19 @@ class Shell:
         """
         return self._predictions
 
-    # ATTENTION: this method cannot be static because logger doesn't process
-    # static methods.
-    def _check_interface(self, instance, parent_class):
-        """
-        Checks the classes on the according interfaces.
-
-        :param instance: object
-            Object to check.
-
-        :param parent_class: class
-            Class to verify.
-
-        :return: bool
-            Results of verifying.
-        """
-        return isinstance(instance, parent_class)
-
     def _check_interfaces(self):
         """
         Checks parser and model classes on the according interfaces.
-
-        :return: bool
-            Status of verifying.
         """
-        check1 = self._check_interface(self._parser, IParser)
-        check2 = self._check_interface(self._model, IModel)
-        return check1 and check2
+        if not isinstance(self._parser, IParser):
+            raise ValueError(f"Parser is not subclass of IParser. "
+                             f"Provided type: {type(self._parser)}")
 
-    def is_debug(self, flag_name="debug"):
-        """
-        Return debug status of the program.
+        if not isinstance(self._model, IModel):
+            raise ValueError(f"Model is not subclass of IModel. "
+                             f"Provided type: {type(self._parser)}")
 
-        :param flag_name: str, optional (default="debug")
-            Name of the debug flag in config.
-
-        :return: bool
-            Value of debug flag.
-        """
-        return self._config_parser[flag_name]
-
-    def format_predictions_by_menu(self, chknums, predictions):
+    def _format_predictions_by_menu(self, chknums, predictions):
         """
         Remove goods which are not in menu on day.
 
@@ -133,12 +106,12 @@ class Shell:
             Right predictions without inconsistencies with the menu.
         """
         for chknum, pred_goods in zip(chknums, predictions):
+            daily_menu = self._parser.get_menu_on_day_by_chknum(chknum)
             for it, pred_good in enumerate(pred_goods):
-                if pred_good not in self._parser.get_menu_on_day_by_chknum(
-                        chknum):
+                if pred_good not in daily_menu:
                     pred_goods.pop(it)
 
-    def process_empty_predictions(self, predictions):
+    def _process_empty_predictions(self, predictions):
         """
         If we have empty prediction, extend them by most popular goods.
 
@@ -148,41 +121,48 @@ class Shell:
         """
         for prediction in predictions:
             if not prediction:
-                prediction.extend(self._parser.most_popular_goods)
+                prediction.extend(self._parser.most_popular_good_ids)
 
-    def get_formatted_predictions(self):
+    def _format_predictions(self):
+        if self._predictions is None:
+            return
+
+        self._predictions = [x.tolist() for x in self._predictions]
+
+        self._predictions = [[int(round(x)) for x in lst]
+                             for lst in self._predictions]
+        self._predictions = [CommonParser.to_final_label(x)
+                             for x in self._predictions]
+
+        self._process_empty_predictions(self._predictions)
+        self._format_predictions_by_menu(self._parser.chknums,
+                                         self._predictions)
+
+    def _get_formatted_predictions(self):
         """
         Format raw results of prediction.
 
         :return: pd.DataFrame
             Formatted predictions.
         """
-        predictions = [x.tolist() for x in self._predictions]
-
-        predictions = [[int(round(x)) for x in lst] for lst in predictions]
-        predictions = [CommonParser.to_final_label(x)
-                       for x in predictions]
-
-        self.format_predictions_by_menu(self._parser.chknums, predictions)
-        self.process_empty_predictions(predictions)
-
         formatted_output = [{
                 "chknum": chknum,
                 "pred": " ".join(str(x) for x in pred)
-            } for chknum, pred in zip(self._parser.chknums, predictions)
+            } for chknum, pred in zip(self._parser.chknums, self._predictions)
         ]
         return pd.DataFrame(formatted_output, dtype=np.int64)
 
-    def output(self, output_filename="result.csv"):
+    def is_debug(self, flag_name="debug"):
         """
-        Output current prediction to filename.
+        Return debug status of the program.
 
-        :param output_filename: str, file or buffer
-            optional (default="result.csv")
-            Filename to output.
+        :param flag_name: str, optional (default="debug")
+            Name of the debug flag in config.
+
+        :return: bool
+            Value of debug flag.
         """
-        out = self.get_formatted_predictions()
-        out.to_csv(output_filename, index=False)
+        return self._config_parser[flag_name]
 
     def train(self, filepath_or_buffer):
         """
@@ -197,36 +177,41 @@ class Shell:
         """
         self._parser.parse_train_data(filepath_or_buffer)
 
-        if self._config_parser["selected_model"] == "CatBoostModel":
-            train_samples, train_labels = self._parser.get_train_data()
-            train_num = int(self._parser_parameters["params"]["proportion"] *
-                            len(train_samples))
+        train_samples, train_labels = self._parser.get_train_data()
+        if (self._config_parser["selected_model"] == "MostPopular" or
+                self._config_parser["selected_model"] == "SameAsBefore"):
             self._model.train(
-                train_samples[:train_num], train_labels[:train_num],
-                eval_set=(train_samples[train_num:], train_labels[train_num:])
-            )
-        elif (self._config_parser["selected_model"] == "EatMostPopular" or
-              self._config_parser["selected_model"] == "EatSameAsBefore" or
-              self._config_parser["selected_model"] == "EatSameAsBefore"):
-            self._model.train(
-                *self._parser.get_train_data(),
+                train_samples, train_labels,
                 most_popular_goods=self._parser.to_interim_label(
-                    self._parser.most_popular_goods
+                    self._parser.most_popular_good_ids
                 )
             )
-        else:
-            self._model.train(*self._parser.get_train_data())
-
-        validation_samples, self._validation_labels = \
-            self._parser.get_validation_data()
-
-        if self._config_parser["selected_model"] == "TestModel":
-            self._predictions = self._model.predict(
-                validation_samples,
-                labels=self._validation_labels
+        elif (self._config_parser["selected_model"] ==
+              "MostPopularFromOwnOrders"):
+            self._model.train(
+                train_samples, train_labels,
+                most_popular_goods=self._parser.to_interim_label(
+                    self._parser.most_popular_good_ids
+                ),
+                most_popular_good_ids=self._parser.most_popular_good_ids,
+                max_good_id=self._parser.max_good_id()
             )
         else:
-            self._predictions = self._model.predict(validation_samples)
+            self._model.train(train_samples, train_labels)
+
+        if self._parser_parameters["params"]["proportion"] != 1.0:
+            validation_samples, self._validation_labels = \
+                self._parser.get_validation_data()
+
+            if self._config_parser["selected_model"] == "TestModel":
+                self._predictions = self._model.predict(
+                    validation_samples,
+                    labels=self._validation_labels
+                )
+            else:
+                self._predictions = self._model.predict(validation_samples)
+
+            self._format_predictions()
 
     def predict(self, filepath_or_buffer_set, filepath_or_buffer_menu):
         """
@@ -238,23 +223,42 @@ class Shell:
         """
         self._parser.parse_test_data(filepath_or_buffer_set,
                                      filepath_or_buffer_menu)
-        print(type(self._model))
+
         self._predictions = self._model.predict(self._parser.get_test_data())
+        self._format_predictions()
 
     def test(self):
         """
         Test prediction quality of algorithm.
 
-        :return tuple (float, float)
-            Pair of two values from tester class.
+        :return tuple (float, float), tuple (None, None)
+            Pair of two values from tester class. Or None if nothing to test.
         """
-        test_result = self._tester.test(self._validation_labels,
-                                        self._predictions)
+        if self._predictions is None:
+            print("Nothing to test!")
+            return None, None
 
-        quality = self._tester.quality_control(self._validation_labels,
+        test_result = self._tester.test(self._parser.answers_for_train,
+                                        self._predictions)
+        quality = self._tester.quality_control(self._parser.answers_for_train,
                                                self._predictions)
 
         return test_result, quality
+
+    def output(self, output_filename="result.csv"):
+        """
+        Output current prediction to filename.
+
+        :param output_filename: str, file or buffer
+            optional (default="result.csv")
+            Filename to output.
+        """
+        if self._predictions is None:
+            print("Nothing to output!")
+            return
+
+        out = self._get_formatted_predictions()
+        out.to_csv(output_filename, index=False)
 
     def load_model(self, filename="model.mdl"):
         """
@@ -265,7 +269,6 @@ class Shell:
         """
         with open(filename, "rb") as input_stream:
             self._model = pickle.loads(input_stream.read())
-
 
     def save_model(self, filename="model.mdl"):
         """
