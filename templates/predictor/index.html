@@ -103,11 +103,21 @@
 
 
             <script>
-                $('.custom-file-input').on('change', function() {
-                   let fileName = $(this).val().split('\\').pop();
-                   $(this).next('.custom-file-label').addClass("selected").html(fileName);
-                });
-            </script>
+				$('.custom-file-input').on('change', function() {
+					var name = $(this).val().split('\\').pop();
+					var tmp = "";
+					if(name.length > 10)
+					{
+						tmp = name.substr(0,5);
+						tmp += "..." + name.substr(name.length-6,name.length);
+					}
+					else
+					{
+						tmp = name;
+					}
+					$(this).next('.custom-file-label').addClass("selected").html(tmp);
+				})
+			</script>
 
 
 

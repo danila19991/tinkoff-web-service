@@ -158,11 +158,21 @@
             </div>
 
             <script>
-                $('.custom-file-input').on('change', function() {
-                   let fileName = $(this).val().split('\\').pop();
-                   $(this).next('.custom-file-label').addClass("selected").html(fileName);
-                });
-            </script>
+				$('.custom-file-input').on('change', function() {
+					var name = $(this).val().split('\\').pop();
+					var tmp = "";
+					if(name.length > 30)
+					{
+						tmp = name.substr(0,15);
+						tmp += "..." + name.substr(name.length-16,name.length);
+					}
+					else
+					{
+						tmp = name;
+					}
+					$(this).next('.custom-file-label').addClass("selected").html(tmp);
+				})
+			</script>
 
             <div class="custom-control custom-checkbox" style="padding-top: 7px">
                     <input type="checkbox" class="custom-control-input" id="customCheck2" name="debug_info" {% if debug_info %} checked{% endif %}>
