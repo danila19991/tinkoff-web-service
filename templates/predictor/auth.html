@@ -20,11 +20,11 @@
             </ul>
 		</div>
 
-		<div class="card-body" align="center" style="margin-left: 35%; margin-right: 35%">
+		<div class="card-body" align="center">
 
 			<form method="post">
                 {% csrf_token %}
-				<div class="form-group">
+				<div class="form-group" style="padding-left: 35%; padding-right: 35%">
 					<label for="inputLogin">Login</label>
 					<input type="login" name="username" class="form-control" id="inputLogin" placeholder="Enter login"
 						   {% if no_username %}
@@ -39,7 +39,7 @@
 
 
 
-				<div class="form-group">
+				<div class="form-group" style="padding-left: 35%; padding-right: 35%">
 					<label for="inputPassword">Password</label>
 					<input type="password" name="password" class="form-control" id="inputPassword" placeholder="Enter password"
 						   {% if no_password or incorrect_username_or_password %}

@@ -2,6 +2,8 @@ import copy
 import importlib
 import json
 
+import mlalgorithms.checks as checks
+
 
 class ConfigParser:
 
@@ -10,34 +12,32 @@ class ConfigParser:
         """
         Constructor which opens config file and parses it.
 
-        :param existing_parsed_json_dict: dict, optional (default=None)
+        :param existing_parsed_json_dict: dict, optional (default=None).
             If config file was parsed, you can pass it to this class.
 
-        :param config_filename: str, optional(default="ml_config.json")
+        :param config_filename: str, optional(default="ml_config.json").
             Name of the json file with configuration.
         """
         if existing_parsed_json_dict is None:
-            if type(config_filename) is not str:
-                raise ValueError(f"config_filename parameter must be str: "
-                                 f"got {type(config_filename)}")
+            checks.check_types(config_filename, str,
+                               var_name="config_filename")
 
             with open(config_filename, "r") as f:
                 self._parsed_json = json.loads(f.read())
         else:
-            if type(existing_parsed_json_dict) is not dict:
-                raise ValueError(f"existing_parsed_json_dict parameter must "
-                                 f"be dict: got "
-                                 f"{type(existing_parsed_json_dict)}")
+            checks.check_types(existing_parsed_json_dict, dict,
+                               var_name="existing_parsed_json_dict")
+
             self._parsed_json = copy.deepcopy(existing_parsed_json_dict)
 
     def __getitem__(self, item):
         """
         Add dict-like interface: config[item]
 
-        :param item: str
+        :param item: str.
             Parameter name in config file.
 
-        :return: int, str, dict, list, bool, None
+        :return: int, float, str, dict, list, bool, None.
             Value of parameter in config file.
         """
         return self._parsed_json[item]
@@ -47,10 +47,10 @@ class ConfigParser:
         """
         Get class with class_name from module_name.
 
-        :param class_name: str
+        :param class_name: str.
             Name of the class to be created.
 
-        :param module_name: str
+        :param module_name: str.
             Name of the module which stores class with class_name.
 
         :return: type of class_name from module_name
@@ -63,50 +63,51 @@ class ConfigParser:
         """
         Get instance of class with class_name from module_name.
 
-        :param class_name: str
+        :param class_name: str.
             Name of the class to be created.
 
-        :param module_name: str
+        :param module_name: str.
             Name of the module which stores class with class_name.
 
-        :param kwargs: dict
+        :param kwargs: dict, optional(default={}).
             Additional parameters which pass into constructor of needed class.
 
         :return: instance of class_name from module_name with kwargs params
         """
         return self.get_class(class_name, module_name)(**kwargs)
 
-    def get_internal_params(self, list_name, internal_label=None):
+    def get_internal_params(self, dict_name, internal_label=None):
         """
-        Get internal dict based on name (and internal label).
+        Get internal dict based on name (and internal label). If nothing was
+        found function throws exception.
 
-        :param list_name: str
-            Name of the global list in config file.
+        :param dict_name: str.
+            Name of the global dict in config file.
 
-        :param internal_label: str, optional (default=None)
-            Name of the internal field in the global list with dicts.
+        :param internal_label: str, optional (default=None).
+            Name of the internal field in the global dict with dicts.
 
-        :return: list, dict
-            If label is not passed return lit with dicts otherwise return
+        :return: list, dict.
+            If label is not passed return dict with dicts otherwise return
             internal dict with label.
         """
-        global_list_with_dicts = self[list_name]
+        global_dict_with_dicts = self[dict_name]
         if internal_label is None:
-            return global_list_with_dicts
+            return global_dict_with_dicts
 
-        for internal_dict in global_list_with_dicts:
-            if internal_label in internal_dict.values():
-                return internal_dict
-        raise KeyError(f"Not found key {internal_label} in {list_name}!")
+        for internal_dict_name in global_dict_with_dicts.keys():
+            if internal_label == internal_dict_name:
+                return global_dict_with_dicts[internal_dict_name]
+        raise KeyError(f"Not found key {internal_label} in {dict_name}!")
 
     def get_params_for(self, label):
         """
         Get class name, module name and parameters for label tool.
 
-        :param label: str
+        :param label: str.
             Name of the tool which need to parse in config file.
 
-        :return: dict {"class_name": str, "module_name": str, "params": dict)
+        :return: dict {"class_name": str, "module_name": str, "params": dict).
             Tuple with label class name, label module name and parameters.
         """
         class_name = self[f"selected_{label}"]
@@ -122,7 +123,7 @@ class ConfigParser:
         """
         Get name of selected metric class from config.
 
-        :return: str
+        :return: str.
             Class name of the metric.
         """
         metric_name = self["selected_metric"]
@@ -132,7 +133,7 @@ class ConfigParser:
         """
         Get parameters from config for tester class.
 
-        :return: dict
+        :return: dict.
             Extract parameters from parsed json config.
         """
-        return self["tester_params"][0]
+        return self["tester_params"]

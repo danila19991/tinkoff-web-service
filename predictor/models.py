@@ -10,11 +10,11 @@ class AlgorithmSettings(models.Model):
     algorithm_package = models.CharField(max_length=32,
                                          default='linear_model')
     default_string = '''{
-        "fit_intercept": true,
-        "normalize": false,
-        "copy_X": true,
-        "n_jobs": 1
-    }'''
+    "fit_intercept": true,
+    "normalize": false,
+    "copy_X": true,
+    "n_jobs": 1
+}'''
     algorithm_settings = models.CharField(max_length=2048,
                                           default=default_string)
     model_results = models.CharField(max_length=256, default='')
