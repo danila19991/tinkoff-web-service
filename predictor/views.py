@@ -1,7 +1,6 @@
 from predictor.views_utils import *
-import json
 from logging import getLogger
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required

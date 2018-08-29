@@ -170,7 +170,7 @@ def is_correct_string(line):
         return False
     try:
         line.encode()
-    except Exception:
+    except ValueError:
         return False
     return MakeRE.prog.match(line)
 
@@ -198,7 +198,7 @@ def check_json(line, context, name):
         return False
     try:
         loads(line)
-    except Exception:
+    except ValueError:
         context['incorrect_' + name] = True
         return False
     if len(line) >= 2048:
@@ -435,7 +435,7 @@ def crete_user_with_settings(user_description):
         try:
             default_model = File(open('models/default.mdl', 'rb+'))
             break
-        except Exception:
+        except IOError:
             sleep(0.5)
     user_settings = AlgorithmSettings(user=user,
                                       question=user_description['question'],
@@ -678,7 +678,7 @@ def check_research_fields(request, context):
         tmp = float(request.POST['parser_proportion'])
         if tmp <= 0 or tmp >= 1:
             raise ValueError
-    except Exception:
+    except ValueError:
         context['incorrect_parser_proportion'] = True
         no_error_context = False
     try:
@@ -687,7 +687,7 @@ def check_research_fields(request, context):
                 int(request.POST['parser_rows'])
             if tmp <= 1:
                 raise ValueError
-    except Exception:
+    except ValueError:
         context['incorrect_parser_rows'] = True
         no_error_context = False
     return no_error_context

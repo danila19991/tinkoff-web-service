@@ -36,7 +36,7 @@ class TestRegisterPageSimple(TestCase):
             try:
                 default_model = File(open('models/default.mdl', 'rb+'))
                 break
-            except Exception:
+            except IOError:
                 sleep(0.5)
         user_settings = AlgorithmSettings(user=user, question='Insert qwerty',
                                           answer='qwerty',
