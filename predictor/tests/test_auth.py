@@ -1,38 +1,39 @@
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
+from predictor.views_utils import create_user_with_settings
 from predictor.models import AlgorithmSettings
-from django.core.files import File
-from time import sleep
+
+
+correct_user = {
+    'first_name': 'oleg',
+    'last_name': 'tester',
+    'login': 'test-user1',
+    'email': 'lion@mail.ru',
+    'password': '12345',
+    'password_double': '12345',
+    'question': 'How many wheels had a Telezhka',
+    'answer': 'three',
+    'register': ''
+}
 
 
 class TestAuthPageSimple(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        test_user1 = User.objects.create_user(username='test-user1',
-                                              password='12345')
-        test_user1.save()
-        test_user2 = User.objects.create_user(username='test-user2',
-                                              password='12345')
-        group = Group.objects.get_or_create(name='researcher')
-        test_user2.groups.add(group[0])
-        while True:
-            try:
-                default_model = File(open('models/default.mdl', 'rb+'))
-                break
-            except Exception:
-                sleep(0.5)
-        user_settings = AlgorithmSettings(user=test_user2,
-                                          question='Insert qwerty',
-                                          answer='qwerty',
-                                          model_file=default_model)
-        user_settings.save()
-        test_user2.save()
+        context = correct_user.copy()
+        create_user_with_settings(context)
+        context['login'] = 'test-user2'
+        context['email'] = 'oleg@yandex.ru'
+        context['is_researcher'] = ''
+        create_user_with_settings(context)
 
     @classmethod
     def tearDownClass(cls):
         for user in User.objects.all():
+            alg_settings = AlgorithmSettings.objects.get(user=user)
+            alg_settings.model_file.delete()
             user.delete()
 
     def test_view_url_exists_at_desired_location(self):

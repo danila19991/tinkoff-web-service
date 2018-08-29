@@ -1,6 +1,7 @@
 {
   "version": 1,
   "disable_existing_loggers": false,
+
   "formatters":
   {
     "simple":
@@ -14,8 +15,13 @@
     "precise":
     {
       "format": "%(asctime)s %(name)-15s %(levelname)-8s %(message)s"
+    },
+    "blank":
+    {
+      "format": ""
     }
   },
+
   "handlers":
   {
     "console":
@@ -32,14 +38,36 @@
       "filename": "app.log",
       "maxBytes": 100000,
       "backupCount": 2
+    },
+    "blank_handler_console":
+    {
+      "class": "logging.StreamHandler",
+      "level": "DEBUG",
+      "formatter": "blank",
+      "stream": "ext://sys.stdout"
+    },
+    "blank_handler_file":
+    {
+      "class": "logging.handlers.RotatingFileHandler",
+      "formatter": "blank",
+      "filename": "app.log",
+      "maxBytes": 100000,
+      "backupCount": 2
     }
   },
+
   "loggers":
   {
     "mlalgorithms":
     {
       "level": "DEBUG",
-      "handlers": ["console", "file"],
+      "handlers":
+      [
+        "console",
+        "blank_handler_console",
+        "file",
+        "blank_handler_file"
+      ],
       "propagate": 0
     }
   }

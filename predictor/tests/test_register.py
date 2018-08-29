@@ -1,9 +1,10 @@
+from time import sleep
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User
-from predictor.models import AlgorithmSettings
+from django.contrib.auth.models import User, Group
 from django.core.files import File
-from time import sleep
+from predictor.models import AlgorithmSettings
+from predictor.views_utils import create_user_with_settings
 
 
 correct_user = {
@@ -22,11 +23,28 @@ saved_fields = ('first_name', 'last_name', 'email', 'login', 'question',
                 'answer')
 
 
-class TestAuthPageSimple(TestCase):
+class TestRegisterPageSimple(TestCase):
 
     @classmethod
     def setUpTestData(cls):
         user = User.objects.create_user('test-login0', 'lion@mail.ru',
+                                        'cat-tologist',
+                                        first_name='lev',
+                                        last_name='tester-too')
+
+        while True:
+            try:
+                default_model = File(open('models/default.mdl', 'rb+'))
+                break
+            except IOError:
+                sleep(0.5)
+        user_settings = AlgorithmSettings(user=user, question='Insert qwerty',
+                                          answer='qwerty',
+                                          model_file=default_model)
+        user_settings.save()
+        default_model.close()
+
+        user = User.objects.create_user('test-login2', 'li0n@mail.ru',
                                         'cat-tologist',
                                         first_name='lev',
                                         last_name='tester-too')
@@ -42,6 +60,9 @@ class TestAuthPageSimple(TestCase):
                                           model_file=default_model)
         user_settings.save()
         default_model.close()
+        group = Group.objects.get_or_create(name='researcher')
+        user.groups.add(group[0])
+        user.save()
 
     @classmethod
     def tearDownClass(cls):
@@ -236,6 +257,76 @@ class TestAuthPageSimple(TestCase):
         user = User.objects.get(username='test-login0')
         self.client.force_login(user=user)
 
-        resp = self.client.get(reverse('predictor:auth'))
+        resp = self.client.get(reverse('predictor:register'))
 
         self.assertRedirects(resp, reverse('predictor:index'))
+
+    def test_redirection_signed_in_index(self):
+        user = User.objects.get(username='test-login0')
+        self.client.force_login(user=user)
+
+        resp = self.client.get(reverse('predictor:register') + '?next=' +
+                               reverse('predictor:index'))
+
+        self.assertRedirects(resp, reverse('predictor:index'))
+
+    def test_redirection_signed_in_research(self):
+        user = User.objects.get(username='test-login0')
+        self.client.force_login(user=user)
+
+        resp = self.client.get(reverse('predictor:register') + '?next=' +
+                               reverse('predictor:research'), follow=True)
+
+        self.assertRedirects(resp, reverse('predictor:index'))
+
+    def test_redirection_signed_in_research_researcher(self):
+        user = User.objects.get(username='test-login2')
+        self.client.force_login(user=user)
+
+        resp = self.client.get(reverse('predictor:register') + '?next=' +
+                               reverse('predictor:research'))
+
+        self.assertRedirects(resp, reverse('predictor:research'))
+
+    def test_registration_function(self):
+        context = correct_user.copy()
+
+        create_user_with_settings(context)
+
+        self.assertEqual(len(User.objects.filter(username='test-login1')), 1)
+
+        user = User.objects.get(username='test-login1')
+
+        self.assertEqual(user.username, 'test-login1')
+        self.assertEqual(user.first_name, 'oleg')
+        self.assertEqual(user.last_name, 'tester')
+        self.assertEqual(user.email, 'oleg@yandex.ru')
+        self.assertTrue(user.check_password('OlEgCOdEr'))
+
+        algo_settings = AlgorithmSettings.objects.get(user=user)
+
+        self.assertEqual(algo_settings.question, correct_user['question'])
+        self.assertEqual(algo_settings.answer, correct_user['answer'])
+
+    def test_registration_function_researcher(self):
+        context = correct_user.copy()
+        context['is_researcher'] = ''
+
+        create_user_with_settings(context)
+
+        self.assertEqual(len(User.objects.filter(username='test-login1')), 1)
+
+        user = User.objects.get(username='test-login1')
+
+        self.assertTrue(user.groups.filter(name='researcher').exists())
+        self.assertEqual(user.username, 'test-login1')
+        self.assertEqual(user.first_name, 'oleg')
+        self.assertEqual(user.last_name, 'tester')
+        self.assertEqual(user.email, 'oleg@yandex.ru')
+        self.assertTrue(user.check_password('OlEgCOdEr'))
+
+        algo_settings = AlgorithmSettings.objects.get(user=user)
+
+        self.assertEqual(algo_settings.question, correct_user['question'])
+        self.assertEqual(algo_settings.answer, correct_user['answer'])
+
