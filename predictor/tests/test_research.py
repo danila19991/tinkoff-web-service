@@ -359,8 +359,6 @@ class TestResearchPageSimple(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'predictor/research.html')
 
-        print(resp.context)
-
         self.assertTrue('incorrect_parser_proportion' in resp.context)
         self.assertTrue(resp.context['incorrect_parser_proportion'])
 
