@@ -16,7 +16,6 @@ from django.shortcuts import get_object_or_404
 
 class MakeRE:
     prog = compile(r"^[-0-9\w\s.@]+$")
-    print('was---------------------------------------------------------')
 
 
 def generate_model(package, algorithm, user_id):
