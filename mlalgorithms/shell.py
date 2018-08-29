@@ -14,6 +14,8 @@ from .parsers.config_parsers import ConfigParser
 
 from .models.model import IModel
 
+from . import checks
+
 
 file_path = os.path.abspath(os.path.dirname(__file__))
 ml_config_path = os.path.join(file_path, "ml_config.json")
@@ -30,10 +32,10 @@ class Shell:
         """
         Constructor which initializes class fields.
 
-        :param existing_model_name: str, optional (default=None)
+        :param existing_model_name: str, optional (default=None).
             Name of the existing model file.
 
-        :param existing_parsed_json_dict: dict, optional (default=None)
+        :param existing_parsed_json_dict: dict, optional (default=None).
             If config file was parsed, you can pass it to this class.
         """
         self._validation_labels = None
@@ -74,35 +76,30 @@ class Shell:
         """
         Get current results of prediction.
 
-        :return: list
+        :return: list.
             Current predictions.
         """
         return self._predictions
 
     def _check_interfaces(self):
         """
-        Checks parser and model classes on the according interfaces.
+        Check parser and model classes on the according interfaces.
         """
-        if not isinstance(self._parser, IParser):
-            raise ValueError(f"Parser is not subclass of IParser. "
-                             f"Provided type: {type(self._parser)}")
-
-        if not isinstance(self._model, IModel):
-            raise ValueError(f"Model is not subclass of IModel. "
-                             f"Provided type: {type(self._parser)}")
+        checks.check_inheritance(self._parser, IParser)
+        checks.check_inheritance(self._model, IModel)
 
     def _format_predictions_by_menu(self, chknums, predictions):
         """
         Remove goods which are not in menu on day.
 
-        :param chknums: list
+        :param chknums: list.
             List of checks.
 
-        :param predictions: list
+        :param predictions: list.
             List of predictions returned by predict method. Need to round float
             values in the lists and transform all np.arrays to list.
 
-        :return: list
+        :return: list.
             Right predictions without inconsistencies with the menu.
         """
         for chknum, pred_goods in zip(chknums, predictions):
@@ -115,7 +112,7 @@ class Shell:
         """
         If we have empty prediction, extend them by most popular goods.
 
-        :param predictions: list
+        :param predictions: list.
             List of predictions returned by predict method. Need to round float
             values in the lists and transform all np.arrays to list.
         """
@@ -124,6 +121,10 @@ class Shell:
                 prediction.extend(self._parser.most_popular_good_ids)
 
     def _format_predictions(self):
+        """
+        Format raw predictions, process empty predictions and remove extra
+        items from predictions.
+        """
         if self._predictions is None:
             return
 
@@ -138,11 +139,11 @@ class Shell:
         self._format_predictions_by_menu(self._parser.chknums,
                                          self._predictions)
 
-    def _get_formatted_predictions(self):
+    def _concat_predictions_with_chknums(self):
         """
-        Format raw results of prediction.
+        Concat results of prediction with chknums for output.
 
-        :return: pd.DataFrame
+        :return: pd.DataFrame.
             Formatted predictions.
         """
         formatted_output = [{
@@ -156,10 +157,10 @@ class Shell:
         """
         Return debug status of the program.
 
-        :param flag_name: str, optional (default="debug")
+        :param flag_name: str, optional (default="debug").
             Name of the debug flag in config.
 
-        :return: bool
+        :return: bool.
             Value of debug flag.
         """
         return self._config_parser[flag_name]
@@ -170,7 +171,7 @@ class Shell:
 
         :param filepath_or_buffer: str, pathlib.Path, py._path.local.LocalPath
             or any object with a read() method (such as a file handle or
-            StringIO)
+            StringIO).
             The string could be a URL. Valid URL schemes include http, ftp, s3,
             and file. For file URLs, a host is expected. For instance, a local
             file could be file://localhost/path/to/table.csv.
@@ -219,14 +220,14 @@ class Shell:
 
         :param filepath_or_buffer_set: str, pathlib.Path,
             py._path.local.LocalPath or any object with a read() method
-            (such as a file handle or StringIO)
+            (such as a file handle or StringIO).
             The string could be a URL. Valid URL schemes include http, ftp, s3,
             and file. For file URLs, a host is expected. For instance, a local
             file could be file://localhost/path/to/table.csv.
 
         :param filepath_or_buffer_menu: str, pathlib.Path,
             py._path.local.LocalPath or any object with a read() method
-            (such as a file handle or StringIO)
+            (such as a file handle or StringIO).
             The string could be a URL. Valid URL schemes include http, ftp, s3,
             and file. For file URLs, a host is expected. For instance, a local
             file could be file://localhost/path/to/table.csv.
@@ -241,7 +242,7 @@ class Shell:
         """
         Test prediction quality of algorithm.
 
-        :return: tuple (float, float) or tuple (None, None)
+        :return: tuple (float, float), tuple (None, None).
             Pair of two values from tester class. Or None if nothing to test.
         """
         if self._predictions is None:
@@ -259,23 +260,23 @@ class Shell:
         """
         Output current prediction to filename.
 
-        :param output_filename: str, file or buffer
-            optional (default="result.csv")
+        :param output_filename: str, file or buffer,
+            optional (default="result.csv").
             Filename to output.
         """
         if self._predictions is None:
             print("Nothing to output!")
             return
 
-        out = self._get_formatted_predictions()
+        out = self._concat_predictions_with_chknums()
         out.to_csv(output_filename, index=False)
 
     def load_model(self, filename="model.mdl"):
         """
         Load trained model with all parameters from file.
 
-        :param filename: str, optional (default="model.mdl")
-            Filename of model.
+        :param filename: str, optional (default="model.mdl").
+            File name of model.
         """
         with open(filename, "rb") as input_stream:
             self._model = pickle.loads(input_stream.read())
@@ -284,8 +285,8 @@ class Shell:
         """
         Save trained model with all parameters to file.
 
-        :param filename: str, optional (default="model.mdl")
-            Filename of model.
+        :param filename: str, optional (default="model.mdl").
+            File name of model.
         """
         with open(filename, "wb") as output_stream:
             output_stream.write(pickle.dumps(self._model))

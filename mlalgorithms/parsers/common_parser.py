@@ -1,5 +1,7 @@
 import pandas as pd
 
+import mlalgorithms.checks as checks
+
 from . import parser
 
 
@@ -18,32 +20,25 @@ class CommonParser(parser.IParser):
         self._answers_for_train = list()
 
         self._proportion = proportion
-        if type(self._proportion) is not float:
-            raise ValueError(f"proportion parameter must be float: "
-                             f"got {type(self._proportion)}.")
-        if not (0.0 < self._proportion <= 1.0):
-            raise ValueError(f"proportion parameter must be in (0.0, 1.0]: "
-                             f"got {self._proportion}.")
+        checks.check_types(self._proportion, float, var_name="proportion")
+        checks.check_value(self._proportion, 0.0, 1.0, True, False,
+                           var_name="proportion")
 
         self._raw_date = raw_date
-        if type(self._raw_date) is not bool:
-            raise ValueError(f"raw_date parameter must be bool: "
-                             f"got {type(self._raw_date)}.")
+        checks.check_types(self._raw_date, bool, var_name="raw_date")
 
         self._n_rows = n_rows
-        if not (self._n_rows is None or type(self._n_rows) is int):
-            raise ValueError(f"n_rows parameter must be None or int: "
-                             f"got {type(self._n_rows)}.")
+        checks.check_types(self._n_rows, type(None), int,
+                           var_name="n_rows")
+        if self._n_rows is not None:
+            checks.check_value(self._n_rows, 0, None, var_name="n_rows")
 
         self._num_popular_ids = num_popular_ids
-        if type(self._num_popular_ids) is not int:
-            raise ValueError(f"num_popular_ids parameter must be int: "
-                             f"got {type(self._num_popular_ids)}.")
+        checks.check_types(self._num_popular_ids, int,
+                           var_name="num_popular_ids")
 
         self._debug = debug
-        if type(self._debug) is not bool:
-            raise ValueError(f"debug parameter must be bool: "
-                             f"got {type(self._debug)}.")
+        checks.check_types(self._debug, bool, var_name="debug")
 
     @property
     def chknums(self):
@@ -177,14 +172,13 @@ class CommonParser(parser.IParser):
             filepath_or_buffer
         )
 
-        if len(self._list_of_instances) != len(self._list_of_labels):
-            raise ValueError(f"Instances of read data are not equal to their"
-                             f"labels: {len(self._list_of_instances)} != "
-                             f"{len(self._list_of_labels)}")
-
-        assert self.to_final_label(self.to_interim_label(
-            [24, 42, 42])) == [24, 42, 42], \
-            "Processing data methods are not mutually inverse."
+        checks.check_equality(len(self._list_of_instances),
+                              len(self._list_of_labels),
+                              message="Instances of read data are not equal "
+                                      "to their.")
+        checks.check_equality(self.to_final_label(self.to_interim_label(
+           [24, 42, 42])), [24, 42, 42], message="Processing data methods are "
+                                                 "not mutually inverse.")
 
         self._list_of_samples = list(map(self._to_sample,
                                          self._list_of_instances))
