@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
-from predictor.views_utils import crete_user_with_settings
+from predictor.views_utils import create_user_with_settings
 from predictor.models import AlgorithmSettings
 
 
@@ -23,11 +23,11 @@ class TestAuthPageSimple(TestCase):
     @classmethod
     def setUpTestData(cls):
         context = correct_user.copy()
-        crete_user_with_settings(context)
+        create_user_with_settings(context)
         context['login'] = 'test-user2'
         context['email'] = 'oleg@yandex.ru'
         context['is_researcher'] = ''
-        crete_user_with_settings(context)
+        create_user_with_settings(context)
 
     @classmethod
     def tearDownClass(cls):

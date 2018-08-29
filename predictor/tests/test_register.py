@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User, Group
 from django.core.files import File
 from predictor.models import AlgorithmSettings
-from predictor.views_utils import crete_user_with_settings
+from predictor.views_utils import create_user_with_settings
 
 
 correct_user = {
@@ -291,7 +291,7 @@ class TestRegisterPageSimple(TestCase):
     def test_registration_function(self):
         context = correct_user.copy()
 
-        crete_user_with_settings(context)
+        create_user_with_settings(context)
 
         self.assertEqual(len(User.objects.filter(username='test-login1')), 1)
 
@@ -312,7 +312,7 @@ class TestRegisterPageSimple(TestCase):
         context = correct_user.copy()
         context['is_researcher'] = ''
 
-        crete_user_with_settings(context)
+        create_user_with_settings(context)
 
         self.assertEqual(len(User.objects.filter(username='test-login1')), 1)
 

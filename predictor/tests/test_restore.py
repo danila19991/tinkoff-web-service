@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 from predictor.models import AlgorithmSettings
-from predictor.views_utils import crete_user_with_settings
+from predictor.views_utils import create_user_with_settings
 
 
 correct_user = {
@@ -23,11 +23,11 @@ class TestRestorePageSimple(TestCase):
     @classmethod
     def setUpTestData(cls):
         context = correct_user.copy()
-        crete_user_with_settings(context)
+        create_user_with_settings(context)
         context['login'] = 'test-login2'
         context['email'] = 'oleg@yandex.ru'
         context['is_researcher'] = ''
-        crete_user_with_settings(context)
+        create_user_with_settings(context)
 
     @classmethod
     def tearDownClass(cls):
@@ -156,11 +156,11 @@ class TestRestorePageWithEmail(TestCase):
     @classmethod
     def setUpTestData(cls):
         context = correct_user.copy()
-        crete_user_with_settings(context)
+        create_user_with_settings(context)
         context['login'] = 'test-login2'
         context['email'] = 'oleg@yandex.ru'
         context['question'] = 'Enter three'
-        crete_user_with_settings(context)
+        create_user_with_settings(context)
 
     @classmethod
     def tearDownClass(cls):
@@ -371,10 +371,10 @@ class TestRestorePageWithConfirmed(TestCase):
     @classmethod
     def setUpTestData(cls):
         context = correct_user.copy()
-        crete_user_with_settings(context)
+        create_user_with_settings(context)
         context['login'] = 'test-login2'
         context['email'] = 'oleg@yandex.ru'
-        crete_user_with_settings(context)
+        create_user_with_settings(context)
 
     @classmethod
     def tearDownClass(cls):

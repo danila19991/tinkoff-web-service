@@ -349,7 +349,7 @@ def register_user(request, context, form_fields):
         return False
 
     # Check necessary fields.
-    user = crete_user_with_settings(request.POST)
+    user = create_user_with_settings(request.POST)
 
     login(request, user)
 
@@ -413,7 +413,7 @@ def decor_signed_in_to_next(func):
     return wrapper
 
 
-def crete_user_with_settings(user_description):
+def create_user_with_settings(user_description):
     """
     Function for creating user.
 
