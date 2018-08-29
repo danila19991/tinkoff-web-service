@@ -553,3 +553,16 @@ class TestRestorePageWithConfirmed(TestCase):
 
         user = User.objects.get(username='test-login0')
         self.assertTrue(user.check_password('password'))
+
+    def test_change_email_to_same(self):
+        context = {'email': 'lion@mail.ru', 'email_button': ''}
+
+        resp = self.client.post(reverse('predictor:restore'), context)
+
+        session = self.client.session
+
+        self.assertTrue('user_email' in session)
+        self.assertEqual(session['user_email'], 'lion@mail.ru')
+
+        self.assertTrue('confirmed' in session)
+        self.assertTrue(session['confirmed'])

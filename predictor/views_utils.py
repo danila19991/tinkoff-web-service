@@ -112,19 +112,23 @@ def make_train(train_data, alg_settings):
 
         "debug": alg_settings.with_debug
     }
-    sh = Shell(existing_parsed_json_dict=params)
-    sh.train(train_data)
-    test_result, quality = sh.test()
-    sh.save_model("models/" + str(alg_settings.user) + ".mdl")
-    new_model = File(open("models/" + str(alg_settings.user) + ".mdl", "rb+"))
-    alg_settings.model_file.delete()
-    alg_settings.model_file = new_model
-    alg_settings.save()
-    new_model.close()
-    if path.isfile("models/" + str(alg_settings.user) + ".mdl"):
-        remove("models/" + str(alg_settings.user) + ".mdl")
-    if path.isfile("models/" + str(alg_settings.user) + ".py"):
-        remove("models/" + str(alg_settings.user) + ".py")
+    try:
+        sh = Shell(existing_parsed_json_dict=params)
+        sh.train(train_data)
+        test_result, quality = sh.test()
+        sh.save_model("models/" + str(alg_settings.user) + ".mdl")
+        new_model = File(open("models/" + str(alg_settings.user) + ".mdl",
+                              "rb+"))
+        if path.isfile(str(alg_settings.model_file)):
+            remove(str(alg_settings.model_file))
+        alg_settings.model_file = new_model
+        alg_settings.save()
+        new_model.close()
+    finally:
+        if path.isfile("models/" + str(alg_settings.user) + ".mdl"):
+            remove("models/" + str(alg_settings.user) + ".mdl")
+        if path.isfile("models/" + str(alg_settings.user) + ".py"):
+            remove("models/" + str(alg_settings.user) + ".py")
     return f'test_result: {test_result}\nquality: {quality}'
 
 
@@ -465,8 +469,10 @@ def restore_search_email(request, context):
         if len(users) != 1:
             context['incorrect_email'] = True
         else:
-            request.session['user_email'] = request.POST['email']
-            request.session['confirmed'] = False
+            if 'user_email' not in request.session or\
+                    request.session['user_email'] != request.POST['email']:
+                request.session['user_email'] = request.POST['email']
+                request.session['confirmed'] = False
 
 
 def restore_check_answer(request, context):

@@ -4,11 +4,12 @@ from django.contrib.auth.models import User
 from predictor.views_utils import crete_user_with_settings, \
     create_dict_for_algorithm_description
 from predictor.models import AlgorithmSettings
-from unittest import skip
 from tempfile import NamedTemporaryFile
 from csv import writer as csv_writer
 from random import randint, choice
 from string import ascii_lowercase, digits, whitespace
+from os import path, remove
+from django.core.files import File
 
 
 correct_user = {
@@ -82,7 +83,8 @@ class TestResearchPageSimple(TestCase):
     def tearDownClass(cls):
         for user in User.objects.all():
             alg_settings = AlgorithmSettings.objects.get(user=user)
-            alg_settings.model_file.delete()
+            if path.isfile(str(alg_settings.model_file)):
+                remove(str(alg_settings.model_file))
             user.delete()
 
     def setUp(self):
@@ -614,14 +616,73 @@ class TestResearchPageSimple(TestCase):
         self.assertNotEqual(resp.context['result_description'],
                             'Train failed.')
 
+    def test_session_saving_text_fields(self):
+        session = self.client.session
+        for field in save_fields:
+            session[field] = correct_settings[field]
+        session.save()
+
+        resp = self.client.get(reverse('predictor:research'))
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'predictor/research.html')
+
+        for field in save_fields:
+            self.assertTrue(field in resp.context)
+            self.assertEqual(resp.context[field], correct_settings[field],
+                             msg=field)
+
+    def test_bool_was_true(self):
+        user = User.objects.get(username='test-user2')
+        alg_settings = AlgorithmSettings.objects.get(user=user)
+        alg_settings.with_debug = False
+        alg_settings.parser_raw_date = False
+        alg_settings.save()
+
+        session = self.client.session
+        session['debug_info'] = True
+        session['parser_raw_date'] = True
+        session.save()
+
+        resp = self.client.get(reverse('predictor:research'))
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'predictor/research.html')
+
+        self.assertTrue('parser_raw_date' in resp.context)
+        self.assertTrue(resp.context['parser_raw_date'])
+        self.assertTrue('debug_info' in resp.context)
+        self.assertTrue(resp.context['debug_info'])
+
+        self.assertFalse('result_description' in resp.context)
+
+
+class TestResearchPageNewModel(TestCase):
+
+    def setUp(self):
+        context = correct_user.copy()
+        context['login'] = 'test-user2'
+        context['email'] = 'oleg@yandex.ru'
+        context['is_researcher'] = ''
+        crete_user_with_settings(context)
+        user = User.objects.get(username='test-user2')
+        self.client.force_login(user=user)
+
+    def tearDown(self):
+        for user in User.objects.all():
+            alg_settings = AlgorithmSettings.objects.get(user=user)
+            if path.isfile(str(alg_settings.model_file)):
+                remove(str(alg_settings.model_file))
+            user.delete()
+
     def test_no_result_correct_train(self):
         train = NamedTemporaryFile(mode='w+')
         train_csv = csv_writer(train)
         train_csv.writerow(['chknum', 'person_id', 'month', 'day', 'good',
-                           'good_id'])
+                            'good_id'])
         for i in range(100):
             train_csv.writerow(["id" + str(i), str(randint(20, 200)), '1',
-                               '17', random_dish(), str(i+1)])
+                            '17', random_dish(), str(i + 1)])
         train.seek(0)
 
         context = correct_settings.copy()
@@ -691,43 +752,3 @@ class TestResearchPageSimple(TestCase):
 
         self.assertTrue('result_description' in resp.context)
         self.assertEqual(resp.context['result_description'], 'Train failed.')
-
-    def test_session_saving_text_fields(self):
-        session = self.client.session
-        for field in save_fields:
-            session[field] = correct_settings[field]
-        session.save()
-
-        resp = self.client.get(reverse('predictor:research'))
-
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, 'predictor/research.html')
-
-        for field in save_fields:
-            self.assertTrue(field in resp.context)
-            self.assertEqual(resp.context[field], correct_settings[field],
-                             msg=field)
-
-    def test_bool_was_true(self):
-        user = User.objects.get(username='test-user2')
-        alg_settings = AlgorithmSettings.objects.get(user=user)
-        alg_settings.with_debug = False
-        alg_settings.parser_raw_date = False
-        alg_settings.save()
-
-        session = self.client.session
-        session['debug_info'] = True
-        session['parser_raw_date'] = True
-        session.save()
-
-        resp = self.client.get(reverse('predictor:research'))
-
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, 'predictor/research.html')
-
-        self.assertTrue('parser_raw_date' in resp.context)
-        self.assertTrue(resp.context['parser_raw_date'])
-        self.assertTrue('debug_info' in resp.context)
-        self.assertTrue(resp.context['debug_info'])
-
-        self.assertFalse('result_description' in resp.context)
