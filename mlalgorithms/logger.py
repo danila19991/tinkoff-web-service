@@ -71,8 +71,8 @@ def setup_logging(config_filename="log_config.json"):
     logging.config.dictConfig(config)
     _configure_logger()
 
-    # ATTENTION! Do not see at warning on next code line, in _configure_logger
-    # method we add newline method for Logger instance.
+    # ATTENTION! Do not see at the warning on next code line, in
+    # _configure_logger method we add newline method for Logger instance.
     get_logger().newline()
 
 
@@ -115,10 +115,16 @@ def decor_timer(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         start = time.time()
+        get_logger().debug(f"function: {func.__name__}"
+                           f"\t\tdate: {time.asctime(time.gmtime(start))}.")
         result = func(*args, **kwargs)
-        duration = time.time() - start
+        end = time.time()
+        duration = end - start
         get_logger().debug(
-            f"{func.__name__} completed in {duration * 1000:.8f}ms.")
+            f"function: {func.__name__}"
+            f"\t\tdate: {time.asctime(time.gmtime(end))}"
+            f"\t\ttime: {duration * 1000:.8f}ms."
+        )
         return result
     return wrapper
 

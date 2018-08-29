@@ -298,7 +298,7 @@
       {
         "proportion": 0.7,
         "raw_date": true,
-        "n_rows": 10000,
+        "n_rows": null,
         "num_popular_ids": 5
       }
     }

@@ -6,55 +6,51 @@ from sklearn.metrics import mean_squared_error, r2_score
 from .models import model
 from .parsers.common_parser import CommonParser
 
+from . import checks
+
 
 class Tester:
 
     def __init__(self, metric_name="MeanF1Score", border=0.5,
-                 invert_list=["MeanF1Score"]):
+                 invert_list=None):
         """
         Initializing object of main class with testing algorithm.
 
-        :param metric_name: str, optional (default="MeanF1Score")
+        :param metric_name: str, optional (default="MeanF1Score").
             Name of the metric to check quality.
 
-        :param border: float, optional (default=0.5)
+        :param border: float, optional (default=0.5).
             The accuracy boundary at which the algorithm is considered to be
             exact.
 
-        :param invert_list: list, optional (default=["MeanF1Score"])
+        :param invert_list: list, optional (default=None).
             List of the metrics name which need to invert comparison with
             border.
         """
         self._metric_name = metric_name
-        if type(self._metric_name) is not str:
-            raise ValueError(f"metric_name parameter must be str: "
-                             f"got {type(self._metric_name)}")
+        checks.check_types(self._metric_name, str, var_name="metric_name")
 
         class_ = globals()[self._metric_name]
         self._metric = class_(border)
-        if not isinstance(self._metric, IMetric):
-            raise ValueError(f"Metric is not subclass of IMetric. "
-                             f"Provided type: {type(self._metric)}")
+        checks.check_inheritance(self._metric, IMetric)
 
         self._invert_list = invert_list
-        if type(self._invert_list) is not list:
-            raise ValueError(f"invert_list parameter must be list: "
-                             f"got {type(self._invert_list)}")
+        checks.check_types(self._invert_list, list, var_name="invert_list")
 
     def test(self, validation_labels, predictions, **kwargs):
         """
         Main testing function.
 
-        :param predictions: array-like, sparse matrix
+        :param predictions: array-like, sparse matrix.
             Predicted data.
 
-        :param validation_labels: array-like, sparse matrix
+        :param validation_labels: array-like, sparse matrix.
             Known data.
 
-        :param kwargs: dict
+        :param kwargs: dict, optional(default={}).
             Additional arguments for metric test method.
 
-        :return: float
+        :return: float.
             A numerical estimate of the accuracy of the algorithm.
         """
         return self._metric.test(validation_labels, predictions, **kwargs)
@@ -63,13 +59,13 @@ class Tester:
         """
         Function to get threshold estimation of the accuracy of the algorithm.
 
-        :param predictions: array-like, sparse matrix
+        :param predictions: array-like, sparse matrix.
             Predicted data.
 
-        :param validation_labels: array-like, sparse matrix
+        :param validation_labels: array-like, sparse matrix.
             Known data.
 
-        :return: float
+        :return: float.
             Bool value which define quality of the algorithm.
         """
         invert_comparison = self._metric_name in self._invert_list
@@ -83,18 +79,13 @@ class IMetric(abc.ABC):
         """
         Initializing object of testing algorithm's class.
 
-        :param border: float
+        :param border: float.
             The accuracy boundary at which the algorithm is considered to be
             exact.
         """
         self._border = border
-        if type(self._border) is not float:
-            raise ValueError(f"border parameter must be float: "
-                             f"got {type(self._border)}.")
-        if not (0.0 <= self._border <= 1.0):
-            raise ValueError(f"border parameter must be in [0.0, 1.0]: "
-                             f"got {self._border}.")
-
+        checks.check_types(self._border, float, var_name="border")
+        checks.check_value(self._border, 0.0, 1.0, var_name="border")
         self._cache = None
 
     @abc.abstractmethod
@@ -102,16 +93,16 @@ class IMetric(abc.ABC):
         """
         Main testing function.
 
-        :param predictions: array-like, sparse matrix
+        :param predictions: array-like, sparse matrix.
             Predicted data.
 
-        :param validation_labels: array-like, sparse matrix
+        :param validation_labels: array-like, sparse matrix.
             Known data.
 
-        :param kwargs: dict
+        :param kwargs: dict.
             Additional arguments for test method.
 
-        :return: float
+        :return: float.
             A numerical estimate of the accuracy of the algorithm.
         """
         raise NotImplementedError("Called abstract class method!")
@@ -121,16 +112,16 @@ class IMetric(abc.ABC):
         """
         Function to get threshold estimation of the accuracy of the algorithm.
 
-        :param predictions: array-like, sparse matrix
+        :param predictions: array-like, sparse matrix.
             Predicted data.
 
-        :param validation_labels: array-like, sparse matrix
+        :param validation_labels: array-like, sparse matrix.
             Known data.
 
-        :param invert_comparison: bool
-            Bool value that changes the direction of comparison
+        :param invert_comparison: bool.
+            Bool value that changes the direction of comparison.
 
-        :return: bool, optional (default=False)
+        :return: bool, optional (default=False).
             Bool value which define quality of the algorithm.
         """
         if self._cache is None:
@@ -147,16 +138,16 @@ class MeanSquaredError(IMetric):
         """
         Main testing function.
 
-        :param validation_labels: list
+        :param validation_labels: list.
             List of lists with known data.
 
-        :param predictions: list
+        :param predictions: list.
             List of lists with predicted data.
 
-        :param r2: bool, optional (default=False)
+        :param r2: bool, optional (default=False).
             Flag for additional metric.
 
-        :return: float or tuple (float, float)
+        :return: float, tuple (float, float).
             A numerical estimate of the accuracy of the algorithm. 0.0 is
             perfect prediction. For r2 score 1.0 is perfect prediction.
         """
@@ -174,13 +165,13 @@ class MeanF1Score(IMetric):
         """
         Formatted input data.
 
-        :param validation_label: list
+        :param validation_label: list.
             Known data.
 
-        :param prediction: list
+        :param prediction: list.
             Predicted data.
 
-        :return: tuple (list, list)
+        :return: tuple (list, list).
             Return tuple with formatted lists.
         """
         int_prediction = [int(round(x)) for x in prediction]
@@ -194,13 +185,13 @@ class MeanF1Score(IMetric):
         """
         Check if goods list is empty.
 
-        :param conj: int
+        :param conj: int.
             Cardinality of conjunction of two sets of goods.
 
-        :param arr_len: int
+        :param arr_len: int.
             Cardinality of goods list.
 
-        :return: int, float
+        :return: int, float.
             Return 0 if goods list is empty, otherwise division conj and
             arr_len.
         """
@@ -214,13 +205,13 @@ class MeanF1Score(IMetric):
         """
         Calculate conjunction of two arrays. Arrays must be sorted!
 
-        :param lst1: list
+        :param lst1: list.
             First sorted array.
 
-        :param lst2: list
-            Second sorted arry.
+        :param lst2: list.
+            Second sorted array.
 
-        :return: int
+        :return: int.
             Cardinality of conjunction.
         """
         it1 = iter(lst1)
@@ -251,16 +242,16 @@ class MeanF1Score(IMetric):
         """
         Main testing function for one list of data.
 
-        :param validation_label: list
+        :param validation_label: list.
             Known data.
 
-        :param prediction: list
+        :param prediction: list.
             Predicted data.
 
-        :param need_format: bool, optional (default=False)
+        :param need_format: bool, optional (default=False).
             Used to define that data is not formatted.
 
-        :return: float
+        :return: float.
             A numerical estimate of the accuracy of the algorithm. 1.0 is
             perfect prediction.
         """
@@ -280,21 +271,22 @@ class MeanF1Score(IMetric):
         """
         Main testing function.
 
-        :param validation_labels: list
+        :param validation_labels: list.
             List of lists with known data.
 
-        :param predictions: list
+        :param predictions: list.
             List of lists with predicted data.
 
-        :param need_format: bool, optional (default=False)
+        :param need_format: bool, optional (default=False).
             Used to define that data is not formatted.
 
-        :return: float
+        :return: float.
             A numerical estimate of the accuracy of the algorithm. 1.0 is
             perfect prediction.
         """
-        assert self.conjunction([1, 1, 2, 3, 5], [1, 2, 4, 5]) == 3, \
-            "There are error in conjunction method!"
+        checks.check_equality(self.conjunction([1, 1, 2, 3, 5],
+                                               [1, 2, 4, 5]), 3,
+                              message="There are error in conjunction method")
 
         num_checks = len(validation_labels)
         result = [self.test_check(validation_labels[i],
@@ -307,14 +299,14 @@ class MeanF1Score(IMetric):
 class TestModel(model.IModel):
 
     def train(self, train_samples, train_labels, **kwargs):
-        if len(train_samples) != len(train_labels):
-            raise ValueError(f"Samples and labels have different sizes: "
-                             f"{len(train_samples)} != {len(train_labels)}")
+        checks.check_equality(len(train_samples), len(train_labels),
+                              message="Samples and labels have different "
+                                      "sizes")
 
     def predict(self, samples, **kwargs):
-        if len(samples) != len(kwargs["labels"]):
-            raise ValueError(f"Samples and labels have different sizes: "
-                             f"{len(samples)} != {len(kwargs['labels'])}")
+        checks.check_equality(len(samples), len(kwargs["labels"]),
+                              message="Samples and labels have different "
+                                      "sizes")
 
         predictions = []
         for _, label in zip(samples, kwargs["labels"]):
