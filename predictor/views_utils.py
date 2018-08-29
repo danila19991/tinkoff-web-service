@@ -14,7 +14,9 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404
 
 
-prog = compile(r"^[-0-9\w\s.@]+$")
+class MakeRE:
+    prog = compile(r"^[-0-9\w\s.@]+$")
+    print('was---------------------------------------------------------')
 
 
 def generate_model(package, algorithm, user_id):
@@ -170,7 +172,7 @@ def is_correct_string(line):
         line.encode()
     except Exception:
         return False
-    return prog.match(line)
+    return MakeRE.prog.match(line)
 
 
 def check_json(line, context, name):
