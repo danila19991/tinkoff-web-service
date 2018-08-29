@@ -156,7 +156,7 @@ def research_page(request):
     if request.method == 'POST' and 'submit' in request.POST:
         process_researcher(request, context, form_fields)
 
-    research_fill_context(request, context)
+    research_fill_context(request, context, form_fields)
 
     logger.info(context)
     return render(request, 'predictor/research.html', context)

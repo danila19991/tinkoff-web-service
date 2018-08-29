@@ -733,7 +733,7 @@ def process_researcher(request, context, form_fields):
     alg_settings = get_object_or_404(AlgorithmSettings, user=request.user)
     for field in form_fields:
         if field in request.POST:
-            context[field] = request.POST[field]
+            request.session[field] = request.POST[field]
 
     if check_research_fields(request, context):
         update_algorithm_settings_from_dict(alg_settings, request.POST)
@@ -751,20 +751,25 @@ def process_researcher(request, context, form_fields):
                 request.session['result_description'] = 'Train failed.'
 
 
-def research_fill_context(request, context):
+def research_fill_context(request, context, form_fields):
     """
     Function for adding some fields in context.
 
     :param request: HttpRequest
         Http request with session.
 
+    :param : form_fields Tuple
+        Fields for filling in context.
+
     :param context: Dict
         Existing context.
     """
+    for field in form_fields:
+        if field in request.POST:
+            context[field] = request.session[field]
+
     alg_settings = get_object_or_404(AlgorithmSettings, user=request.user)
     context = create_dict_for_algorithm_description(alg_settings, context)
-    context['parser_raw_date'] = alg_settings.parser_raw_date
-    context['debug_info'] = alg_settings.with_debug
     if 'result_description' in request.session and \
             request.session['result_description']:
         context['result_description'] = request.session['result_description']

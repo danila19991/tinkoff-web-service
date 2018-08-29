@@ -158,7 +158,7 @@ class TestResearchPageSimple(TestCase):
 
         for field in save_fields:
             self.assertTrue(field in resp.context)
-            self.assertEqual(resp.context[field], (correct_settings[field]),
+            self.assertEqual(resp.context[field], correct_settings[field],
                              msg=field)
 
         self.assertFalse('result_description' in resp.context)
@@ -405,7 +405,7 @@ class TestResearchPageSimple(TestCase):
 
         context['algorithm_settings'] = '{'
 
-        for i in  range(1000):
+        for i in range(1000):
             context['algorithm_settings'] += '"field'+str(i) + \
                                              '":"very important text\n'
         context['algorithm_settings'] = '"size":1000}'
@@ -691,3 +691,43 @@ class TestResearchPageSimple(TestCase):
 
         self.assertTrue('result_description' in resp.context)
         self.assertEqual(resp.context['result_description'], 'Train failed.')
+
+    def test_session_saving_text_fields(self):
+        session = self.client.session
+        for field in save_fields:
+            session[field] = correct_settings[field]
+        session.save()
+
+        resp = self.client.get(reverse('predictor:research'))
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'predictor/research.html')
+
+        for field in save_fields:
+            self.assertTrue(field in resp.context)
+            self.assertEqual(resp.context[field], correct_settings[field],
+                             msg=field)
+
+    def test_bool_was_true(self):
+        user = User.objects.get(username='test-user2')
+        alg_settings = AlgorithmSettings.objects.get(user=user)
+        alg_settings.with_debug = False
+        alg_settings.parser_raw_date = False
+        alg_settings.save()
+
+        session = self.client.session
+        session['debug_info'] = True
+        session['parser_raw_date'] = True
+        session.save()
+
+        resp = self.client.get(reverse('predictor:research'))
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'predictor/research.html')
+
+        self.assertTrue('parser_raw_date' in resp.context)
+        self.assertTrue(resp.context['parser_raw_date'])
+        self.assertTrue('debug_info' in resp.context)
+        self.assertTrue(resp.context['debug_info'])
+
+        self.assertFalse('result_description' in resp.context)
