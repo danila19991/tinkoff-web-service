@@ -158,7 +158,7 @@ class TestResearchPageSimple(TestCase):
 
         for field in save_fields:
             self.assertTrue(field in resp.context)
-            self.assertEqual(resp.context[field], correct_settings[field],
+            self.assertEqual(resp.context[field], str(correct_settings[field]),
                              msg=field)
 
         self.assertFalse('result_description' in resp.context)

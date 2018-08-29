@@ -734,6 +734,8 @@ def process_researcher(request, context, form_fields):
     for field in form_fields:
         if field in request.POST:
             request.session[field] = request.POST[field]
+    request.session['debug_info'] = 'debug_info' in request.POST
+    request.session['parser_raw_date'] = 'parser_raw_date' in request.POST
 
     if check_research_fields(request, context):
         update_algorithm_settings_from_dict(alg_settings, request.POST)
@@ -764,12 +766,13 @@ def research_fill_context(request, context, form_fields):
     :param context: Dict
         Existing context.
     """
-    for field in form_fields:
-        if field in request.POST:
-            context[field] = request.session[field]
-
     alg_settings = get_object_or_404(AlgorithmSettings, user=request.user)
     context = create_dict_for_algorithm_description(alg_settings, context)
+
+    for field in form_fields:
+        if field in request.session:
+            context[field] = request.session[field]
+
     if 'result_description' in request.session and \
             request.session['result_description']:
         context['result_description'] = request.session['result_description']
