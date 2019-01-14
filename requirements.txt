@@ -3,4 +3,4 @@ scipy==1.1.0
 pandas==0.23.4
 scikit-learn==0.19.2
 catboost==0.9.1.1
-django==2.1
+django==2.1.5
